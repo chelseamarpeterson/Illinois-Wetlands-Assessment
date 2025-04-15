@@ -61,7 +61,6 @@ p.hist = ggplot(df.stack[which(df.stack$group == "Historical loss"),],
                        panel.grid = element_blank(),
                        panel.background = element_rect(fill = "white")) +
                  scale_fill_manual(values=c("coral1","coral3","coral4"))
-p.hist
 ggsave("SummaryFigures/HistoricalLoss.png", plot = p.hist, 
        width=21.5, height=36, units="cm") 
 
@@ -86,7 +85,6 @@ p.cwa=ggplot(df.cwa,
               panel.grid = element_blank(),
               panel.background = element_rect(fill = "white")) +
         scale_fill_manual(values=c("skyblue1","dodgerblue3","blue4"))
-p.cwa
 ggsave("SummaryFigures/CWACoverage.png", plot = p.cwa, 
        width=22.75, height=36, units="cm") 
 
@@ -109,7 +107,6 @@ p.pro = ggplot(df.stack[which(df.stack$group == "Protection status"),],
                     panel.grid = element_blank(),
                     panel.background = element_rect(fill = "white")) +
               scale_fill_manual(values=c("goldenrod2","darkgoldenrod"))
-p.pro
 ggsave("SummaryFigures/ProtectionStatus.png", plot = p.pro, 
        width = 19.25, height = 36, units="cm") 
 
