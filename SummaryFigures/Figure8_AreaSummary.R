@@ -1,10 +1,12 @@
-setwd("C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo")
+path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
+
+setwd(path_to_gitrepo)
 
 library(ggplot2)
 library(patchwork)
 
 # read in excel file
-sum.area.df = read.csv("Figure8_AreaSummary.csv")
+sum.area.df = read.csv("SummaryFigures/Figure8_AreaSummary.csv")
 
 # remove extra rows
 sum.area.df = data.frame(sum.area.df[1:3,])

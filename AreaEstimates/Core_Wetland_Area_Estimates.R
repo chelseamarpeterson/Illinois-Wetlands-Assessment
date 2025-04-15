@@ -1,6 +1,5 @@
 path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results"
 path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
-setwd(path_to_datafiles)
 
 library(ggplot2)
 library(reshape2)
@@ -17,6 +16,8 @@ AcPerHa = 2.47105
 # Figure 1 & Table 1: calculate and plot area of wetlands that could be 
 # non-jurisdictional based on levee, wetland flood frequency, and flow permanence 
 # criteria
+
+setwd(path_to_datafiles)
 
 ## step 1: estimate total area of wetlands in the state (397,186 ha)
 base.df = read.csv("IL_WS_Step10_WaterRegime_Table.csv")
@@ -195,7 +196,7 @@ round(data.frame(perc.del.stats.df[area.mean.sort$ix,c("mean","min","max")]),8)
 setwd(path_to_gitrepo)
 
 # read in levin (2002) and Simmmons et al. (2024) estimates
-ls.df = read.csv("PreviousStudyEstimates/Levins_Simmons_Lane_Estimates_Acres.csv", sep=",")
+ls.df = read.csv("AreaEstimates/PreviousStudies/Levins_Simmons_Lane_Estimates_Acres.csv", sep=",")
 ls.df.area = ls.df[which(ls.df$type == "area"),-which(colnames(ls.df) == "type")]
 
 # Levin (2002) estimate
@@ -215,7 +216,7 @@ for (i in 1:n.w) {
 }
 
 # Gold (2024) estimates
-gold.est.df = read.csv("PreviousStudyEstimates/Gold_Estimates_Acres.csv", sep=",")
+gold.est.df = read.csv("AreaEstimates/PreviousStudies/Gold_Estimates_Acres.csv", sep=",")
 gold.est.df = gold.est.df[which(gold.est.df$type == "area"),-which(colnames(gold.est.df) == "type")]
 gold.est.df[,c("mean","min","max")] = gold.est.df[,c("mean","min","max")]/AcPerHa
 gold.est.df$study = "Gold (2024)"
@@ -330,7 +331,7 @@ p2 = ggplot(area.comb.melt) +
 p3 = p1 + p2
 p3
 setwd(path_to_gitrepo)
-ggsave("MainFigures/Figure1_Jurisdictional_Plot.png", 
+ggsave("AreaEstimates/Figure1_Jurisdictional_Plot.png", 
         plot = p3, width = 36, height = 12, units="cm")
 
 ################################################################################
@@ -508,7 +509,7 @@ round(pond.df[pond.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 
 ## step 11: gold and simmons unprotected area estimates
 setwd(path_to_gitrepo)
-gold.gap.df = read.csv("PreviousStudyEstimates/Gold_IL_Gap12_Area_Percent.csv")
+gold.gap.df = read.csv("AreaEstimates/PreviousStudies/Gold_IL_Gap12_Area_Percent.csv")
 gold.area.df = gold.gap.df[,c("wr","mean.area","min.area","max.area")]
 gold.perc.df = gold.gap.df[,c("wr","mean.percent","min.percent","max.percent")]
 study.area.df = data.frame(matrix(nrow=2*8, ncol=5))
@@ -591,6 +592,6 @@ p2 = ggplot(type.area.sum) +
                   legend.key.size = unit(0.7,'cm'))
 p3 = p1 + p2
 p3
-ggsave("MainFigures/Figure2_Unprotected_Plot_Raw.png", 
+ggsave("AreaEstimates/Figure2_Unprotected_Plot_Raw.png", 
        plot = p3, width = 36, height = 12, units="cm")
 
