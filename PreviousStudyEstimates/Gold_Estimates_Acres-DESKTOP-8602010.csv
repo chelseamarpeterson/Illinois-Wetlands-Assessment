@@ -1,0 +1,17 @@
+water_cutoff,type,mean,min,max
+Intermittently Flooded,area,93739.42,89581.64,184338.7
+Temporary Flooded,area,93739.42,89581.64,184338.7
+Seasonally Saturated,area,715750.99,714155.4,756758.6
+Seasonally Flooded,area,718687.71,717092.13,759129.6
+Seasonally Flooded/Saturated,area,950582.62,950082.83,958241.7
+Semipermanently Flooded,area,950582.62,950082.83,958241.7
+Intermittently Exposed,area,988085.6,988085.6,988181.5
+Permanently Flooded,area,988341.54,988341.54,988372.5
+Intermittently Flooded,percent,9.479862,9.059386,18.64217
+Temporary Flooded,percent,9.479862,9.059386,18.64217
+Seasonally Saturated,percent,72.383854,72.222493,76.53096
+Seasonally Flooded,percent,72.680845,72.519484,76.77073
+Seasonally Flooded/Saturated,percent,96.132363,96.081819,96.90693
+Semipermanently Flooded,percent,96.132363,96.081819,96.90693
+Intermittently Exposed,percent,99.925037,99.925037,99.93474
+Permanently Flooded,percent,99.95092,99.95092,99.95405

@@ -1,4 +1,6 @@
-setwd("C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Illinois-Wetlands-Assessment-Public")
+path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results"
+path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
+setwd(path_to_datafiles)
 
 library(ggplot2)
 library(reshape2)
@@ -188,18 +190,18 @@ area.del.stats.df[area.mean.sort$ix,]
 round(data.frame(percent.stats.df[area.mean.sort$ix,c("mean","min","max")]),2)
 round(data.frame(perc.del.stats.df[area.mean.sort$ix,c("mean","min","max")]),8)
 
-## compare results to previous studies 
+## step 8: compare results to previous studies 
 
-# levin estimate
+# Levin (2002) estimate
 levin.est.ac = 150188
 levin.est.ha = levin.est.ac/AcPerHa
 
-# Gold (2024) dataframe
+# Gold (2024) estimates
 gold.abs.df = data.frame(matrix(nrow=8, ncol=0))
 gold.abs.df$water_cutoff = rev(water.regimes)
-gold.abs.df$mean = c(93739.42,93739.42,715750.99,718687.71,950582.62,950582.62,988085.60,988341.54)/AcPerHa
-gold.abs.df$min = c(89581.64,89581.64,714155.40,717092.13,950082.83,950082.83,988085.60,988341.54)/AcPerHa
-gold.abs.df$max = c(184338.7,184338.7,756758.6,759129.6,958241.7,958241.7,988181.5,988372.5)/AcPerHa
+gold.abs.df$mean = c(93739.42,93739.42,715750.99,718687.71,950582.62,950582.62,988085.60,988341.54)
+gold.abs.df$min = c(89581.64,89581.64,714155.40,717092.13,950082.83,950082.83,988085.60,988341.54)
+gold.abs.df$max = c(184338.7,184338.7,756758.6,759129.6,958241.7,958241.7,988181.5,988372.5)
 gold.abs.df$group = "Gold (2024)"
 area.stats.df = rbind(area.stats.df, gold.abs.df)
 
@@ -228,16 +230,13 @@ sim.perc.df$max = rep(23.48, 8)
 sim.perc.df$group = "Simmons et al. (2024)"
 percent.stats.df = rbind(percent.stats.df, sim.perc.df)
 
-# calculate uncertainty ranges
+# step 9: calculate uncertainty ranges
 area.stats.df$range = area.stats.df$max - area.stats.df$min
 percent.stats.df$range = percent.stats.df$max - percent.stats.df$min
 
-# compare our uncertainty ranges with Gold (2024)
-our.ests = area.stats.df[which(area.stats.df$group == "This study"),c("mean","min","max")]
-range.diff =  area.stats.df[which(area.stats.df$group == "Gold (2024)"),c("mean","min","max")] - our.ests[area.mean.sort$ix,c("mean","min","max")]
-range.diff
+## step 10: plot non-WOTUS area and reason for lack of jurisdiction side by side (Figure 1)
 
-## plot non-juris area and reason for lack of jurisdiction side by side
+# make dataframes for mean, min, and max areas for each group of reaons for loss of jurisdiction
 area.mean.simple = area.df %>%
                     group_by(water_cutoff) %>% 
                     summarize(`Behind levee` = mean(leveed_only + leveed_and_below_flood),
@@ -259,6 +258,8 @@ area.max.simple = area.df %>%
 area.mean.simple$stat = "Mean"
 area.min.simple$stat = "Minimum"
 area.max.simple$stat = "Maximum"
+
+# melt mean, min, and max dataframes
 area.mean.melt = melt(area.mean.simple, 
                       id.variables=c("water_cutoff"), 
                       value.name=c("Mean"),
@@ -271,12 +272,19 @@ area.max.melt = melt(area.max.simple,
                      id.variables=c("water_cutoff"), 
                      value.name=c("Maximum"),
                      variable.name=c("Reason for Lack\nof Federal Jurisdiction"))
+
+# join mean, min, and max dataframes
 area.comb.melt = right_join(area.mean.melt, area.min.melt, by=c("water_cutoff","Reason for Lack\nof Federal Jurisdiction"))
 area.comb.melt = right_join(area.comb.melt, area.max.melt, by=c("water_cutoff","Reason for Lack\nof Federal Jurisdiction"))
-area.melt = melt(area.comb.melt[,c("water_cutoff","Reason for Lack\nof Federal Jurisdiction","Mean","Minimum","Maximum")])
-reason.order = c("Below flood-frequency cutoff","Non-intersecting",
-                 "Behind levee","Behind levee & non-intersecting")
-studies = sort(unique(area.stats.df$group))
+area.melt = melt(area.comb.melt[,c("water_cutoff","Reason for Lack\nof Federal Jurisdiction","Mean","Minimum","Maximum")],
+                 variable.name="stat",value.name="area")
+
+# print areas by reason
+for (i in 1:4) {
+  print(area.comb.melt[which(area.comb.melt$Reason == reason.order[i]),c("Mean","Minimum","Maximum")][area.mean.sort$ix,])
+}
+
+# dataframe for state total (did not use)
 state.df = data.frame("Total State Area" = total.state.area.ha)
 colnames(state.df) = "Total State Area"
 area.stats.df$water_label = rep(0, nrow(area.stats.df))
@@ -285,6 +293,8 @@ for (i in 1:n.w) { area.stats.df$water_label[which(area.stats.df$water_cutoff ==
 for (i in 1:n.w) { area.comb.melt$water_label[which(area.comb.melt$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
 
 # Figure 1
+studies = sort(unique(area.stats.df$group))
+reason.order = c("Below flood-frequency cutoff","Non-intersecting","Behind levee","Behind levee & non-intersecting")
 p1 = ggplot(area.stats.df, aes(x=mean, 
                                y=factor(water_label, levels=water.reg.labels), 
                                group=factor(group, levels=studies), 
@@ -325,28 +335,16 @@ p2 = ggplot(area.comb.melt) +
                   legend.key.size = unit(0.7,'cm'),
                   axis.text.y=element_blank())
 p3 = p1 + p2
-p3
-setwd("C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Documents/Figures")
-ggsave("Figure1_Jurisdictional_Plot_Raw.png", 
+setwd(path_to_gitrepo)
+ggsave("MainFigures/Figure1_Jurisdictional_Plot.png", 
         plot = p3, width = 36, height = 12, units="cm")
 
-# print areas by reason
-round(min(area.comb.melt[which(area.comb.melt$Reason == reason.order[1]),c("Mean","Minimum","Maximum")]))
-round(max(area.comb.melt[which(area.comb.melt$Reason == reason.order[1]),c("Mean","Minimum","Maximum")]))
-
-round(min(area.comb.melt[which(area.comb.melt$Reason == reason.order[2]),c("Mean","Minimum","Maximum")]))
-round(max(area.comb.melt[which(area.comb.melt$Reason == reason.order[2]),c("Mean","Minimum","Maximum")]))
-
-round(min(area.comb.melt[which(area.comb.melt$Reason == reason.order[3]),c("Mean","Minimum","Maximum")]))
-round(max(area.comb.melt[which(area.comb.melt$Reason == reason.order[3]),c("Mean","Minimum","Maximum")]))
-
-round(min(area.comb.melt[which(area.comb.melt$Reason == reason.order[4]),c("Mean","Minimum","Maximum")]))
-round(max(area.comb.melt[which(area.comb.melt$Reason == reason.order[4]),c("Mean","Minimum","Maximum")]))
 
 ################################################################################
 # Figure 2 & Table 2: calculate and plot area of non-jurisdictional wetland in 
 # each GAP category
-setwd("C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results")
+
+setwd(path_to_datafiles)
 
 # read in gap intersect table
 gap.df = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect_Table.csv")
