@@ -523,11 +523,10 @@ study.area.df[9:16,"min"] = 9393.814
 study.area.df[9:16,"max"] = 32530
 study.area.df$gap = "Managed for biodiversity"
 study.area.df[,c("mean","min","max")] = study.area.df[,c("mean","min","max")]/AcPerHa
-
 study.melt = melt(study.area.df)
 study.minmax = study.melt[-which(study.melt$variable == "mean"),]
 
-# plot area in each gap category and vegetation type
+# step 12: plot area in each gap category and vegetation type
 type.lowercase = c("Freshwater emergent wetland","Freshwater forested/shrub wetland","Freshwater pond")
 type.order = c("Freshwater forested/shrub wetland","Freshwater emergent wetland","Freshwater pond")
 for (i in 1:3) { type.area.sum$type[which(type.area.sum$type == wetland.types[i])] = type.lowercase[i] }
