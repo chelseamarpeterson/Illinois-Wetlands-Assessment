@@ -164,7 +164,7 @@ area.stats.df = area.df %>%
                 summarize(mean = mean(area),
                           min = min(area),
                           max = max(area))
-area.stats.df$group = "This study"
+area.stats.df$study = "This study"
 
 # estimate cumulative area as percentage of total state area 
 percent.stats.df = area.stats.df
@@ -192,43 +192,34 @@ round(data.frame(perc.del.stats.df[area.mean.sort$ix,c("mean","min","max")]),8)
 
 ## step 8: compare results to previous studies 
 
+setwd(path_to_gitrepo)
+
+# read in levin (2002) and Simmmons et al. (2024) estimates
+ls.df = read.csv("PreviousStudyEstimates/Levins_Simmons_Lane_Estimates_Acres.csv", sep=",")
+ls.df.area = ls.df[which(ls.df$type == "area"),-which(colnames(ls.df) == "type")]
+
 # Levin (2002) estimate
-levin.est.ac = 150188
-levin.est.ha = levin.est.ac/AcPerHa
-
-# Gold (2024) estimates
-gold.abs.df = data.frame(matrix(nrow=8, ncol=0))
-gold.abs.df$water_cutoff = rev(water.regimes)
-gold.abs.df$mean = c(93739.42,93739.42,715750.99,718687.71,950582.62,950582.62,988085.60,988341.54)
-gold.abs.df$min = c(89581.64,89581.64,714155.40,717092.13,950082.83,950082.83,988085.60,988341.54)
-gold.abs.df$max = c(184338.7,184338.7,756758.6,759129.6,958241.7,958241.7,988181.5,988372.5)
-gold.abs.df$group = "Gold (2024)"
-area.stats.df = rbind(area.stats.df, gold.abs.df)
-
-gold.perc.df = data.frame(matrix(nrow=8, ncol=0))
-gold.perc.df$water_cutoff = rev(water.regimes)
-gold.perc.df$mean = c(9.479862,9.479862,72.383854,72.680845,96.132363,96.132363,99.925037,99.950920)
-gold.perc.df$min = c(9.059386,9.059386,72.222493,72.519484,96.081819,96.081819,99.925037,99.950920)
-gold.perc.df$max = c(18.64217,18.64217,76.53096,76.77073,96.90693,96.90693,99.93474,99.95405)
-gold.perc.df$group = "Gold (2024)"
-percent.stats.df = rbind(percent.stats.df, gold.perc.df)
+levin.est.df = ls.df.area[which(ls.df.area$study == "Levin (2002)"),]
+levin.est.df[,c("mean","min","max")] = levin.est.df[,c("mean","min","max")]/AcPerHa
+for (i in 1:n.w) {
+  levin.est.df$water_cutoff = rev(water.regimes)[i]
+  area.stats.df = rbind(area.stats.df, levin.est.df[,colnames(area.stats.df)])
+}
 
 # Simmons et al. (2024) dataframes
-sim.abs.df = data.frame(matrix(nrow=8, ncol=0))
-sim.abs.df$water_cutoff = rev(water.regimes)
-sim.abs.df$mean = rep(182819, 8)/AcPerHa
-sim.abs.df$min = rep(140299, 8)/AcPerHa
-sim.abs.df$max = rep(339425, 8)/AcPerHa
-sim.abs.df$group = "Simmons et al. (2024)"
-area.stats.df = rbind(area.stats.df, sim.abs.df)
+sim.est.df = ls.df.area[which(ls.df.area$study == "Simmons et al. (2024)"),]
+sim.est.df[,c("mean","min","max")] = sim.est.df[,c("mean","min","max")]/AcPerHa
+for (i in 1:n.w) {
+  sim.est.df$water_cutoff = rev(water.regimes)[i]
+  area.stats.df = rbind(area.stats.df, sim.est.df[,colnames(area.stats.df)])
+}
 
-sim.perc.df = data.frame(matrix(nrow=8, ncol=0))
-sim.perc.df$water_cutoff = rev(water.regimes)
-sim.perc.df$mean = rep(12.65, 8)
-sim.perc.df$min = rep(9.70, 8)
-sim.perc.df$max = rep(23.48, 8)
-sim.perc.df$group = "Simmons et al. (2024)"
-percent.stats.df = rbind(percent.stats.df, sim.perc.df)
+# Gold (2024) estimates
+gold.est.df = read.csv("PreviousStudyEstimates/Gold_Estimates_Acres.csv", sep=",")
+gold.est.df = gold.est.df[which(gold.est.df$type == "area"),-which(colnames(gold.est.df) == "type")]
+gold.est.df[,c("mean","min","max")] = gold.est.df[,c("mean","min","max")]/AcPerHa
+gold.est.df$study = "Gold (2024)"
+area.stats.df = rbind(area.stats.df, gold.est.df[,colnames(area.stats.df)])
 
 # step 9: calculate uncertainty ranges
 area.stats.df$range = area.stats.df$max - area.stats.df$min
@@ -293,19 +284,19 @@ for (i in 1:n.w) { area.stats.df$water_label[which(area.stats.df$water_cutoff ==
 for (i in 1:n.w) { area.comb.melt$water_label[which(area.comb.melt$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
 
 # Figure 1
-studies = sort(unique(area.stats.df$group))
+studies = sort(unique(area.stats.df$study))
 reason.order = c("Below flood-frequency cutoff","Non-intersecting","Behind levee","Behind levee & non-intersecting")
 p1 = ggplot(area.stats.df, aes(x=mean, 
                                y=factor(water_label, levels=water.reg.labels), 
-                               group=factor(group, levels=studies), 
-                               color=factor(group, levels=studies),
-                               linetype=factor(group, levels=studies))) +
+                               group=factor(study, levels=studies), 
+                               color=factor(study, levels=studies),
+                               linetype=factor(study, levels=studies))) +
             geom_line(linewidth=0.8) +
             geom_ribbon(data = area.stats.df,
                         aes(xmin=min, xmax=max, 
-                            group=factor(group, levels=studies), 
-                            color=factor(group, levels=studies),
-                            linetype=factor(group, levels=studies)), 
+                            group=factor(study, levels=studies), 
+                            color=factor(study, levels=studies),
+                            linetype=factor(study, levels=studies)), 
                         alpha=0.1, linewidth=0.9) +
             labs(y="Wetland Flood Frequency Cutoff",
                  x="Non-WOTUS Wetland Area (ha)",
@@ -313,8 +304,10 @@ p1 = ggplot(area.stats.df, aes(x=mean,
                  linetype="Source of Range Estimate",
                  group="Source of Range Estimate") +
             scale_x_continuous(limits=c(0,400000), labels=scales::comma) +
-            scale_color_manual(values=c("goldenrod1","darkorange2","black")) +
-            scale_linetype_manual(values = c("dotdash","dashed","solid")) +
+            scale_color_manual(values=c("goldenrod1","green4","darkorange2","black")) +
+            scale_linetype_manual(values = c("dashed","dotted","longdash","solid",
+                                             rep("dashed",2),rep("dotted",2),
+                                             rep("longdash",2),rep("solid",2)))+
             theme(text = element_text(size=12),
                   legend.key.size = unit(0.7,'cm'))
 p2 = ggplot(area.comb.melt) +
@@ -335,10 +328,10 @@ p2 = ggplot(area.comb.melt) +
                   legend.key.size = unit(0.7,'cm'),
                   axis.text.y=element_blank())
 p3 = p1 + p2
+p3
 setwd(path_to_gitrepo)
 ggsave("MainFigures/Figure1_Jurisdictional_Plot.png", 
         plot = p3, width = 36, height = 12, units="cm")
-
 
 ################################################################################
 # Figure 2 & Table 2: calculate and plot area of non-jurisdictional wetland in 
@@ -346,7 +339,7 @@ ggsave("MainFigures/Figure1_Jurisdictional_Plot.png",
 
 setwd(path_to_datafiles)
 
-# read in gap intersect table
+## step 1: read in gap intersect table
 gap.df = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect_Table.csv")
 
 # check area totals
@@ -354,23 +347,23 @@ sum(gap.df$Shape_Area/10^4); sum(ws.df$Shape_Area/10^4)
 sum(gap.df$Area_Ha); sum(ws.df$Area_Ha)
 sum(gap.df$Area_Acres/AcPerHa); sum(ws.df$Area_Acres/AcPerHa)
 
-# counties with stormwater ordinances that protect wetlands
+## step 2: specify counties with stormwater ordinances that protect wetlands
 pro.cnties = c("Cook","DeKalb","DuPage","Grundy","Kane","McHenry","Lake","Will")
 n.cp = length(pro.cnties)
 
-# create column that combines GAP and county information
+## step 3: create column that combines GAP and county information
 gap.df$Protected_Status = rep("No protection", nrow(gap.df))
 for (i in seq(1,2)) {gap.df$Protected_Status[which(gap.df$GAP_Sts == i)] = "Managed for biodiversity"}
 gap.df$Protected_Status[which((gap.df$NAME %in% pro.cnties) & !(gap.df$GAP_Sts %in% c(1,2)))] = "County stormwater ordinance"
 gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts == 3))] = "Managed for multiple uses"
 gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts == 4))] = "No protection"
 
-# create new column with labels
+# create vectors for protection level categories
 pro.cats = sort(unique(gap.df$Protected_Status))
 n.cats = length(pro.cats)
 pro.order = c("No protection","Managed for multiple uses","County stormwater ordinance","Managed for biodiversity")
 
-# sum area in each gap category
+## step 4: sum non-WOTUS area in each gap category
 gap.area.df = data.frame(matrix(nrow=n.cats*n.w*n.p*n.b, ncol=5))
 colnames(gap.area.df) = c("gap","water_cutoff","perm_level","buf_dist","area")
 n = 1
@@ -393,16 +386,16 @@ for (g in 1:n.cats) {
   }
 }
 
-# calculate minimum, mean, and maximum for each water regime and gap cateogry
+## step 5: calculate minimum, mean, and maximum for each water regime and gap cateogry
 gap.stats.df = gap.area.df %>%
                group_by(gap, water_cutoff) %>% 
                summarize(mean = mean(area),
                          min = min(area),
                          max = max(area))
-gap.percent.df = gap.stats.df
-gap.percent.df[,c("mean","min","max")] = gap.stats.df[,c("mean","min","max")]/total.state.area.ha*100
 
-## Table 1: estimate area with no protection
+## step 6: estimate area with no protection (Table 2, columns 2-4)
+
+# absolute area
 np.stats.df = gap.stats.df[which(gap.stats.df$gap == "No protection"),]
 np.area.sort = sort(np.stats.df$mean, index.return=TRUE)
 np.stats.df$range = np.stats.df$max - np.stats.df$min
@@ -418,10 +411,8 @@ round(data.frame(np.percent.df[np.percent.sort$ix,c("mean","min","max","range")]
 # area as percentage of Non-WOTUS area
 np.percent.nonCWA = np.stats.df[np.area.sort$ix,c("mean","min","max")]/area.stats.df[np.area.sort$ix,c("mean","min","max")]*100
 round(np.percent.nonCWA, 2)
-min(np.percent.nonCWA$mean)
-max(np.percent.nonCWA$mean)
 
-# estimate differences between vulernable and protected wetlands
+# step 7: estimate differences between vulnerable and protected wetlands (Table 2, columns 5-7)
 area.diff.df = area.stats.df[area.mean.sort$ix,c("mean","min","max")] - np.stats.df[np.area.sort$ix,c("mean","min","max")]
 perc.diff.df = percent.stats.df[area.mean.sort$ix,c("mean","min","max")] - np.percent.df[np.area.sort$ix,c("mean","min","max")]
 perc.noCWA.diff.df = area.diff.df/area.stats.df[area.mean.sort$ix,c("mean","min","max")]*100
@@ -429,68 +420,41 @@ perc.noCWA.diff.df = area.diff.df/area.stats.df[area.mean.sort$ix,c("mean","min"
 round(area.diff.df)
 round(perc.diff.df, 2)
 round(perc.noCWA.diff.df, 2)
-min(perc.noCWA.diff.df$mean)
-max(perc.noCWA.diff.df$mean)
 
-# estimate area in each protection category
+## step 8: estimate area in each protection category (Table A7)
+
+# managed for biodiversity
 bio.df = gap.stats.df[which(gap.stats.df$gap == "Managed for biodiversity"),]
 bio.sort = sort(bio.df$mean, index.return=T)
 bio.df[bio.sort$ix,]
 round(bio.df[bio.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 
+# county stormwater ordinance
 cnty.df = gap.stats.df[which(gap.stats.df$gap == "County stormwater ordinance"),]
 cnty.sort = sort(cnty.df$mean, index.return=T)
 cnty.df[cnty.sort$ix,]
 round(cnty.df[cnty.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 
+# managed for multiple uses
 mult.df = gap.stats.df[which(gap.stats.df$gap == "Managed for multiple uses"),]
 mult.sort = sort(mult.df$mean, index.return=T)
 mult.df[mult.sort$ix,]
 round(mult.df[mult.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 bio.df[bio.sort$ix,c("mean","min","max")] + cnty.df[cnty.sort$ix,c("mean","min","max")] + mult.df[mult.sort$ix,c("mean","min","max")]
 
-min((bio.df[,c("mean",'min',"max")] + cnty.df[,c("mean",'min',"max")])/bio.df[,c("mean",'min',"max")]*100-100)
-max((bio.df[,c("mean",'min',"max")] + cnty.df[,c("mean",'min',"max")])/bio.df[,c("mean",'min',"max")]*100-100)
-min((gap.area.df[which(gap.area.df$gap == "County stormwater ordinance"),"area"] + gap.area.df[which(gap.area.df$gap == "Managed for biodiversity"),"area"])/gap.area.df[which(gap.area.df$gap == "Managed for biodiversity"),"area"]*100-100)
-max((gap.area.df[which(gap.area.df$gap == "County stormwater ordinance"),"area"] + gap.area.df[which(gap.area.df$gap == "Managed for biodiversity"),"area"])/gap.area.df[which(gap.area.df$gap == "Managed for biodiversity"),"area"]*100-100)
+## step 9: estimate area without protection based on wetland type
 
-# percentage of non-js area that is unprotected
-round(np.stats.df[np.area.sort$ix,"mean"]/area.stats.df[area.mean.sort$ix,"mean"]*100, 2)
-round(np.stats.df[np.area.sort$ix,"min"]/area.stats.df[area.mean.sort$ix,"min"]*100, 2)
-round(np.stats.df[np.area.sort$ix,"max"]/area.stats.df[area.mean.sort$ix,"max"]*100, 2)
-
-round((area.stats.df[area.mean.sort$ix,"mean"]-np.stats.df[np.area.sort$ix,"mean"])/area.stats.df[area.mean.sort$ix,"mean"]*100, 2)
-round((area.stats.df[area.mean.sort$ix,"min"]-np.stats.df[np.area.sort$ix,"min"])/area.stats.df[area.mean.sort$ix,"min"]*100, 2)
-round((area.stats.df[area.mean.sort$ix,"max"]-np.stats.df[np.area.sort$ix,"max"])/area.stats.df[area.mean.sort$ix,"max"]*100, 2)
-
-# estimate max contribution of stream permanence and buffer distances to area uncertianty
-np.buf.stats.df = gap.area.df[which(gap.area.df$gap == "No protection"),] %>%
-                  group_by(water_cutoff, perm_level) %>% 
-                  summarize(mean = mean(area),
-                            min = min(area),
-                            max = max(area))
-np.buf.stats.df$range = np.buf.stats.df$max - np.buf.stats.df$min
-round(max(np.buf.stats.df$range))
-
-np.perm.stats.df = gap.area.df[which(gap.area.df$gap == "No protection"),] %>%
-                   group_by(water_cutoff, buf_dist) %>% 
-                   summarize(mean = mean(area),
-                             min = min(area),
-                             max = max(area))
-np.perm.stats.df$range = np.perm.stats.df$max - np.perm.stats.df$min
-round(max(np.perm.stats.df$range))
-
-################################################################################
-
-# plot area without protection based on wetland type
+# remove singular empty row
 gap.df = gap.df[-which(gap.df$WETLAND_TYPE == ""),]
+
+# character vector for types
 wetland.types = sort(unique(gap.df$WETLAND_TYPE))
 n.t = length(wetland.types)
 
 # add unprotected column
 gap.df$Not_Protected = 1*(gap.df$Protected_Status == "No protection")
 
-# estimate unprotected nonjurisdictional area in each type by water regime
+# estimate unprotected non-WOTUS area in each type by water regime
 type.area.df = data.frame(matrix(nrow=n.t*n.w*n.p*n.b, ncol=5))
 colnames(type.area.df) = c("type","water_cutoff","perm_level","buf_dist","area")
 n = 1
@@ -522,29 +486,29 @@ type.area.sum = type.area.df %>%
                           min = min(area),
                           max = max(area))
 
+## step 10: summarize area estimates for Table A8
+
+# forested
 forest.df = type.area.sum[which(type.area.sum$type == "Freshwater Forested/Shrub Wetland"),]
 forest.sort = sort(forest.df$mean, index.return=T)
 forest.df[forest.sort$ix,]
 round(forest.df[forest.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 
+# emergent
 emerg.df = type.area.sum[which(type.area.sum$type == "Freshwater Emergent Wetland"),]
 emerg.sort = sort(emerg.df$mean, index.return=T)
 emerg.df[emerg.sort$ix,]
 round(emerg.df[emerg.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 
+# ponts
 pond.df = type.area.sum[which(type.area.sum$type == "Freshwater Pond"),]
 pond.sort = sort(pond.df$mean, index.return=T)
 pond.df[pond.sort$ix,]
 round(pond.df[pond.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 
-forest.area.df = type.area.df[which(type.area.df$type == "Freshwater Forested/Shrub Wetland"),]
-nopro.area.df = gap.area.df[which(gap.area.df$gap == "No protection"),]
-min(forest.area.df$area/nopro.area.df$area*100)
-max(forest.area.df$area/nopro.area.df$area*100)
-
-# gold and simmons unprotected area estimates
-setwd("C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results/acgold-wotus-wetlands-wetness")
-gold.gap.df = read.csv("Gold_IL_Gap12_Area_Percent.csv")
+## step 11: gold and simmons unprotected area estimates
+setwd(path_to_gitrepo)
+gold.gap.df = read.csv("PreviousStudyEstimates/Gold_IL_Gap12_Area_Percent.csv")
 gold.area.df = gold.gap.df[,c("wr","mean.area","min.area","max.area")]
 gold.perc.df = gold.gap.df[,c("wr","mean.percent","min.percent","max.percent")]
 study.area.df = data.frame(matrix(nrow=2*8, ncol=5))
@@ -628,7 +592,6 @@ p2 = ggplot(type.area.sum) +
                   legend.key.size = unit(0.7,'cm'))
 p3 = p1 + p2
 p3
-setwd("C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Documents/Figures")
-ggsave("Figure2_Unprotected_Plot_Raw.png", 
+ggsave("MainFigures/Figure2_Unprotected_Plot_Raw.png", 
        plot = p3, width = 36, height = 12, units="cm")
 
