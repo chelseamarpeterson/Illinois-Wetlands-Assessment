@@ -271,11 +271,6 @@ area.comb.melt = right_join(area.comb.melt, area.max.melt, by=c("water_cutoff","
 area.melt = melt(area.comb.melt[,c("water_cutoff","Reason for Lack\nof Federal Jurisdiction","Mean","Minimum","Maximum")],
                  variable.name="stat",value.name="area")
 
-# print areas by reason
-for (i in 1:4) {
-  print(area.comb.melt[which(area.comb.melt$Reason == reason.order[i]),c("Mean","Minimum","Maximum")][area.mean.sort$ix,])
-}
-
 # dataframe for state total (did not use)
 state.df = data.frame("Total State Area" = total.state.area.ha)
 colnames(state.df) = "Total State Area"
@@ -334,6 +329,10 @@ setwd(path_to_gitrepo)
 ggsave("AreaEstimates/Figure1_Jurisdictional_Plot.png", 
         plot = p3, width = 36, height = 12, units="cm")
 
+# print areas by reason
+for (i in 1:4) {
+  print(area.comb.melt[which(area.comb.melt$Reason == reason.order[i]),c("Mean","Minimum","Maximum")][area.mean.sort$ix,])
+}
 ################################################################################
 # Figure 2 & Table 2: calculate and plot area of non-jurisdictional wetland in 
 # each GAP category
@@ -509,9 +508,15 @@ round(pond.df[pond.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 
 ## step 11: gold and simmons unprotected area estimates
 setwd(path_to_gitrepo)
-gold.gap.df = read.csv("AreaEstimates/PreviousStudies/Gold_IL_Gap12_Area_Percent.csv")
+
+# read in gold values
+gold.gap.df = read.csv("AreaEstimates/PreviousStudies/Gold_Gap12_Area_Percent.csv")
 gold.area.df = gold.gap.df[,c("wr","mean.area","min.area","max.area")]
-gold.perc.df = gold.gap.df[,c("wr","mean.percent","min.percent","max.percent")]
+
+# read in simmons values
+sim.area.df = read.csv("AreaEstimates/PreviousStudies/Simmons_Gap12_Area.csv")
+
+# combine estimates into one dataframe
 study.area.df = data.frame(matrix(nrow=2*8, ncol=5))
 colnames(study.area.df) = c("water_cutoff","mean","min","max","study")
 study.area.df[,"water_cutoff"] = rep(rev(water.regimes), 2)
@@ -519,13 +524,9 @@ study.area.df[1:8,"study"] = "Gold (2024)"
 study.area.df[9:16,"study"] = "Simmons et al. (2024)"
 study.area.df[1,c("mean","min","max")] = gold.area.df[1,c("mean.area","min.area","max.area")]
 study.area.df[2:8,c("mean","min","max")] = gold.area.df[,c("mean.area","min.area","max.area")]
-study.area.df[9:16,"mean"] = 13791.56
-study.area.df[9:16,"min"] = 9393.814
-study.area.df[9:16,"max"] = 32530
+study.area.df[9:16,c("mean","min","max")] = sim.area.df
 study.area.df$gap = "Managed for biodiversity"
 study.area.df[,c("mean","min","max")] = study.area.df[,c("mean","min","max")]/AcPerHa
-study.melt = melt(study.area.df)
-study.minmax = study.melt[-which(study.melt$variable == "mean"),]
 
 # step 12: plot area in each gap category and vegetation type
 type.lowercase = c("Freshwater emergent wetland","Freshwater forested/shrub wetland","Freshwater pond")
