@@ -196,7 +196,7 @@ round(data.frame(perc.del.stats.df[area.mean.sort$ix,c("mean","min","max")]),8)
 setwd(path_to_gitrepo)
 
 # read in levin (2002) and Simmmons et al. (2024) estimates
-ls.df = read.csv("AreaEstimates/PreviousStudies/Levins_Simmons_Lane_Estimates_Acres.csv", sep=",")
+ls.df = read.csv("Area_Estimates/Previous_Studies/Levins_Simmons_Lane_Estimates_Acres.csv", sep=",")
 ls.df.area = ls.df[which(ls.df$type == "area"),-which(colnames(ls.df) == "type")]
 
 # Levin (2002) estimate
@@ -216,7 +216,7 @@ for (i in 1:n.w) {
 }
 
 # Gold (2024) estimates
-gold.est.df = read.csv("AreaEstimates/PreviousStudies/Gold_Estimates_Acres.csv", sep=",")
+gold.est.df = read.csv("Area_Estimates/Previous_Studies/Gold_Estimates_Acres.csv", sep=",")
 gold.est.df = gold.est.df[which(gold.est.df$type == "area"),-which(colnames(gold.est.df) == "type")]
 gold.est.df[,c("mean","min","max")] = gold.est.df[,c("mean","min","max")]/AcPerHa
 gold.est.df$study = "Gold (2024)"
@@ -326,7 +326,7 @@ p2 = ggplot(area.comb.melt) +
 p3 = p1 + p2
 p3
 setwd(path_to_gitrepo)
-ggsave("AreaEstimates/Figure1_Jurisdictional_Plot.png", 
+ggsave("Area_Estimates/Figure1_Jurisdictional_Plot.png", 
         plot = p3, width = 36, height = 12, units="cm")
 
 # print areas by reason
@@ -510,11 +510,11 @@ round(pond.df[pond.sort$ix,c("mean","min","max")]/total.state.area.ha*100,2)
 setwd(path_to_gitrepo)
 
 # read in gold values
-gold.gap.df = read.csv("AreaEstimates/PreviousStudies/Gold_Gap12_Area_Percent.csv")
+gold.gap.df = read.csv("Area_Estimates/Previous_Studies/Gold_Gap12_Area_Percent.csv")
 gold.area.df = gold.gap.df[,c("wr","mean.area","min.area","max.area")]
 
 # read in simmons values
-sim.area.df = read.csv("AreaEstimates/PreviousStudies/Simmons_Gap12_Area.csv")
+sim.area.df = read.csv("Area_Estimates/Previous_Studies/Simmons_Gap12_Area.csv")
 
 # combine estimates into one dataframe
 study.area.df = data.frame(matrix(nrow=2*8, ncol=5))
@@ -593,6 +593,6 @@ p2 = ggplot(type.area.sum) +
                   legend.key.size = unit(0.7,'cm'))
 p3 = p1 + p2
 p3
-ggsave("AreaEstimates/Figure2_Unprotected_Plot_Raw.png", 
+ggsave("Area_Estimates/Figure2_Unprotected_Plot_Raw.png", 
        plot = p3, width = 36, height = 12, units="cm")
 
