@@ -203,15 +203,15 @@ ggsave("CEJST_Analysis/Figures/Figure7_Posterior_FloodLinearRegression.png",
        plot = p3, width = 32, height = 14, units="cm")
 
 # plot incremental increase in slope of nonlinear model
-x = seq(0, 210, by=10)/mean(area.cj.df.nc$Mean_DivArea)/1000
-n = length(x)
+area_norm = seq(0, 210, by=10)/mean(area.cj.df.nc$Mean_DivArea)/1000
+n = length(area_norm)
 delta = c(0)
-all_f = c(exp(-0.77156311+0.04860032*x[1])*100)
+all_f = c(exp(-0.77156311+0.04860032*area_norm[1])*100)
 for (i in 2:n) {
-  f = exp(-0.77156311+0.04860032*x[i])*100
+  f = exp(-0.77156311+0.04860032*area_norm[i])*100
   delta = c(delta, f-all_f[i-1])
   all_f = c(all_f, f)
 }
-plot(x[2:n]*mean(area.cj.df.nc$Mean_DivArea)*1000, delta[2:n], ylim=c(1.2,3))
+plot(area_norm[2:n]*mean(area.cj.df.nc$Mean_DivArea)*1000, delta[2:n], ylim=c(1.2,3))
 min(delta[2:n])
 max(delta[2:n])

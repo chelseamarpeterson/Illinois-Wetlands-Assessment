@@ -178,15 +178,11 @@ area.cj.df.nc$Mean_Norm = area.cj.df.nc$Mean_DivArea/mean(area.cj.df.nc$Mean_Div
 
 # make lists with FLD_PFS
 fld.list = list(wid = area.cj.df$wid,
-                   area_norm = as.vector(area.cj.df$Mean_Norm), 
-                   fld_pfs = as.vector(area.cj.df$FLD_PFS),
-                   bl_pfs = as.vector(area.cj.df$EBLR_PFS),
-                   pl_pfs = as.vector(area.cj.df$EPLR_PFS))
+                area_norm = as.vector(area.cj.df$Mean_Norm), 
+                fld_pfs = as.vector(area.cj.df$FLD_PFS))
 fld.list.nc = list(wid = area.cj.df.nc$wid,
                 area_norm = as.vector(area.cj.df.nc$Mean_Norm), 
-                fld_pfs = as.vector(area.cj.df.nc$FLD_PFS),
-                bl_pfs = as.vector(area.cj.df.nc$EBLR_PFS),
-                pl_pfs = as.vector(area.cj.df.nc$EPLR_PFS))
+                fld_pfs = as.vector(area.cj.df.nc$FLD_PFS))
 
 # fit models
 set.seed(271)
