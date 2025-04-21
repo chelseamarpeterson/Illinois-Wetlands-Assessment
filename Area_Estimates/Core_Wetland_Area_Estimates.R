@@ -596,3 +596,7 @@ p3
 ggsave("Area_Estimates/Figure2_Unprotected_Plot_Raw.png", 
        plot = p3, width = 36, height = 12, units="cm")
 
+# estimate percentage by which county ordinances increase MFB area
+x = gap.area.df[gap.area.df$gap == "County stormwater ordinance","area"]/gap.area.df[gap.area.df$gap == "Managed for biodiversity","area"]*100
+min(x)
+max(x)

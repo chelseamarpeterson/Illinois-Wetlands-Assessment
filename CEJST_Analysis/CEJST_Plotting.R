@@ -159,6 +159,7 @@ round(m.stats[wr.id2,c("mean100","2.5_100","97.5_100")],2)
 post.df = read.csv("CEJST_Analysis/Posteriors/Linear_Model_EffectSize_HPDIs.csv")
 post.line.df = read.csv("CEJST_Analysis/Posteriors/Linear_Model_Prediction.csv")
 area.cj.df.nc = read.csv("CEJST_Analysis/Posteriors/CEJST_WetlandArea_Dataframe_NoUnproCnties.csv")
+sf.ind = which(area.cj.df.nc$water_cutoff == "Seasonally Flooded")
 
 # plot effect sizes for results normalized by census tract area
 post.df$water_label = rep(0, nrow(post.df))
@@ -205,13 +206,17 @@ ggsave("CEJST_Analysis/Figures/Figure7_Posterior_FloodLinearRegression.png",
 # plot incremental increase in slope of nonlinear model
 area_norm = seq(0, 210, by=10)/mean(area.cj.df.nc$Mean_DivArea)/1000
 n = length(area_norm)
-delta = c(0)
+delta = c()
 all_f = c(exp(-0.77156311+0.04860032*area_norm[1])*100)
 for (i in 2:n) {
   f = exp(-0.77156311+0.04860032*area_norm[i])*100
   delta = c(delta, f-all_f[i-1])
   all_f = c(all_f, f)
 }
-plot(area_norm[2:n]*mean(area.cj.df.nc$Mean_DivArea)*1000, delta[2:n], ylim=c(1.2,3))
-min(delta[2:n])
-max(delta[2:n])
+plot(area_norm[2:n]*mean(area.cj.df.nc$Mean_DivArea)*1000, delta, ylim=c(1.2,3))
+min(delta)
+max(delta)
+min(area.cj.df.nc[sf.ind,]$Mean_DivArea*1000)
+max(area.cj.df.nc[sf.ind,]$Mean_DivArea*1000)
+min(post.line.df$mean*100)
+max(post.line.df$mean*100)

@@ -64,16 +64,14 @@ area.cj.df$aid = as.integer(factor(area.cj.df$EAL_ET)) # expected agricultural l
 area.cj.df$bid = as.integer(factor(area.cj.df$EBL_ET)) # expected building loss
 area.cj.df$wfid = as.integer(factor(area.cj.df$WFR_ET)) # wildfire risk
 
-################################################################################
-# CEJST Analysis 1: fit Bayesian distributions to each indicator group
-
-## comparisons of mean area between groups
-
 # normalize wetland areas by census tract areas
 area.cj.df$Mean_DivArea = area.cj.df$mean_area/area.cj.df$Area_Ha
 
 # normalize relative areas by global mean
 area.cj.df$Mean_Norm = area.cj.df$Mean_DivArea/mean(area.cj.df$Mean_DivArea)
+
+################################################################################
+# CEJST Analysis 1: fit Bayesian distributions to each indicator group
 
 # put normalized areas and indicators into list
 area.list = list(area_norm = as.vector(area.cj.df$Mean_Norm),
@@ -203,7 +201,7 @@ ml.fc <- ulam(alist(fld_pfs ~ normal(mu, sigma),
                    sigma_fld ~ exponential(1),
                    sigma ~ exponential(1),
                    Rho ~ lkj_corr(2)) , 
-             data=fld.list.nc, chains=1, log_lik=TRUE)
+             data=fld.list.nc, chains=5, log_lik=TRUE)
 
 # compare models
 #precis(ml.f, depth=3)
