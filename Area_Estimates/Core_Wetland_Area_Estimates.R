@@ -197,22 +197,30 @@ setwd(path_to_gitrepo)
 
 # read in levin (2002) and Simmmons et al. (2024) estimates
 ls.df = read.csv("Area_Estimates/Previous_Studies/Levins_Simmons_Lane_Estimates_Acres.csv", sep=",")
-ls.df.area = ls.df[which(ls.df$type == "area"),-which(colnames(ls.df) == "type")]
+ls.df.area = ls.df[which(ls.df$type == "area"),-which(colnames(ls.df) %in% c("type","unit"))]
 
-# Levin (2002) estimate
-levin.est.df = ls.df.area[which(ls.df.area$study == "Levin (2002)"),]
+# Levin et al. (2002) estimate
+levin.est.df = ls.df.area[which(ls.df.area$study == "Levin et al. (2002)"),]
 levin.est.df[,c("mean","min","max")] = levin.est.df[,c("mean","min","max")]/AcPerHa
 for (i in 1:n.w) {
   levin.est.df$water_cutoff = rev(water.regimes)[i]
   area.stats.df = rbind(area.stats.df, levin.est.df[,colnames(area.stats.df)])
 }
 
-# Simmons et al. (2024) dataframes
+# Simmons et al. (2024) estimate
 sim.est.df = ls.df.area[which(ls.df.area$study == "Simmons et al. (2024)"),]
 sim.est.df[,c("mean","min","max")] = sim.est.df[,c("mean","min","max")]/AcPerHa
 for (i in 1:n.w) {
   sim.est.df$water_cutoff = rev(water.regimes)[i]
   area.stats.df = rbind(area.stats.df, sim.est.df[,colnames(area.stats.df)])
+}
+
+# Lane et al. (2025) estimate
+lan.est.df = ls.df.area[which(ls.df.area$study == "Lane et al. (2025)"),]
+lan.est.df[,c("mean","min","max")] = lan.est.df[,c("mean","min","max")]/AcPerHa
+for (i in 1:n.w) {
+  lan.est.df$water_cutoff = rev(water.regimes)[i]
+  area.stats.df = rbind(area.stats.df, lan.est.df[,colnames(area.stats.df)])
 }
 
 # Gold (2024) estimates
@@ -280,7 +288,7 @@ for (i in 1:n.w) { area.stats.df$water_label[which(area.stats.df$water_cutoff ==
 for (i in 1:n.w) { area.comb.melt$water_label[which(area.comb.melt$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
 
 # Figure 1
-studies = sort(unique(area.stats.df$study))
+studies = c("This study",sort(unique(area.stats.df$study))[1:4])
 reason.order = c("Below flood-frequency cutoff","Non-intersecting","Behind levee","Behind levee & non-intersecting")
 p1 = ggplot(area.stats.df, aes(x=mean, 
                                y=factor(water_label, levels=water.reg.labels), 
@@ -300,10 +308,16 @@ p1 = ggplot(area.stats.df, aes(x=mean,
                  linetype="Source of Range Estimate",
                  group="Source of Range Estimate") +
             scale_x_continuous(limits=c(0,400000), labels=scales::comma) +
-            scale_color_manual(values=c("goldenrod1","green4","darkorange2","black")) +
-            scale_linetype_manual(values = c("dashed","dotted","longdash","solid",
-                                             rep("dashed",2),rep("dotted",2),
-                                             rep("longdash",2),rep("solid",2)))+
+            scale_color_manual(values=c("This study"="black",
+                                        "Gold (2024)"="goldenrod1",
+                                        "Lane et al. (2025)" = "green4",
+                                        "Levin et al. (2002)" = "darkorange2",
+                                        "Simmons et al. (2024)"="purple")) +
+            scale_linetype_manual(values = c("This study"="solid",
+                                             "Gold (2024)"="dashed",
+                                             "Lane et al. (2025)"="dotted",
+                                             "Levin et al. (2002)"="longdash",
+                                             "Simmons et al. (2024)"="twodash")) +
             theme(text = element_text(size=12),
                   legend.key.size = unit(0.7,'cm'))
 p2 = ggplot(area.comb.melt) +

@@ -1,5 +1,6 @@
-study,type,mean,min,max
-Levin (2002),area,150188,150188,150188
-Lane et al. (2025),percent,16.25,13,19.5
-Simmons et al. (2024),area,182819,140299,339425
-Simmons et al. (2024),percent,12.65,9.7,23.48
+study,type,mean,min,max,unit
+Levin et al. (2002),area,150188,150188,150188,acres
+Lane et al. (2025),area,173653.0388,138922.431,208383.6465,acres
+Lane et al. (2025),percent,16.25,13,19.5,percent
+Simmons et al. (2024),area,182819,140299,339425,acres
+Simmons et al. (2024),percent,12.65,9.7,23.48,percent
