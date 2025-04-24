@@ -1,4 +1,4 @@
-path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results"
+path_to_nwi_data = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results/NWI_Data"
 path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
 
 library(ggplot2)
@@ -17,7 +17,7 @@ AcPerHa = 2.47105
 # non-jurisdictional based on levee, wetland flood frequency, and flow permanence 
 # criteria
 
-setwd(path_to_datafiles)
+setwd(path_to_nwi_data)
 
 ## step 1: estimate total area of wetlands in the state (397,186 ha)
 base.df = read.csv("IL_WS_Step10_WaterRegime_Table.csv")
@@ -351,7 +351,7 @@ for (i in 1:4) {
 # Figure 2 & Table 2: calculate and plot area of non-jurisdictional wetland in 
 # each GAP category
 
-setwd(path_to_datafiles)
+setwd(path_to_nwi_data)
 
 ## step 1: read in gap intersect table
 gap.df = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect_Table.csv")
