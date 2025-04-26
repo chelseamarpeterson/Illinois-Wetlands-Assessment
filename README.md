@@ -3,11 +3,16 @@ Public repository for data files and R code used to quantify area of unprotected
 
 ## ArcPro_Models
 Folder that contains ArcToolbox file (.atbx) with all model builder files to:
+
 (1) process NHD data to create WOTUS stream water networks with varying buffer distances and flow permanence levels
+
 (2) process NWI data to subset of potentially jurisdictional wetlands
+
 (3) intersect wetland layer with leveed areas and WOTUS networks to identify non-WOTUS wetlands
+
 (4) intersect wetland layer with county boundaries and USGS PAD-US database to identify unprotected non-WOTUS wetlands
-(5) intersect wetland layer with CEJST data to evaluate intersection of unprotected wetlands with vulnerable communities.
+
+(5) intersect wetland layer with CEJST data to evaluate intersection of unprotected wetlands with vulnerable communities
 
 ## Area_Estimates
 Folder with script to estimate non-WOTUS wetland area as a function of the wetland flood frequency. It also generates plots for the non-WOTUS wetland area by reason for lack of federal jurisdiction, protection level, and Cowardin wetland type. Another folder contains non-WOTUS and protected wetland area estimates from previous studies, which are incorporated into the figures.
