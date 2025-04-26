@@ -1,8 +1,8 @@
 # Illinois-Wetlands-Assessment
-Public repository for ArcPro models and R code used to quantify area of unprotected non-WOTUS Illinois wetlands and evaluate potential impacts on vulnerable communities. The repository is organized by folder, with each representing a separate pre-processing or analysis step
+Public repository for ArcPro models and R code used to quantify area of unprotected non-WOTUS Illinois wetlands and evaluate potential impacts on vulnerable communities. The repository is organized by folder, with each representing a separate pre-processing or post-analysis step
 
 ## ArcPro_Models
-Folder that contains ArcToolbox (.atbx) with all model builder files to:
+Folder with ArcToolbox (.atbx) that contains all model builder files to:
 
 (1) process NHD data to create WOTUS stream water networks with varying buffer distances and flow permanence levels
 
@@ -42,15 +42,15 @@ Folder with script to estimate non-WOTUS wetland area as a function of the wetla
 [3] Simmons, B.A., Beck, M.W., Flaherty-Walia, K., Lewis, J., Sherwood, E.T., 2024. A murky ruling threatens the fate of millions of US wetlands. Wetlands 44, 47. https://doi.org/10.1007/s13157-024-01801-y
 
 ## CEJST_Analysis
-Contains R scripts for (1) summing unprotected non-WOTUS wetland area in each IL census tract and writing results to .csv files for visualization, (2) running statistical analyses evaluating the relationship between unprotected wetland area and CEJST fields, including FLD_ET, N_CLT_EOMI, and FLD_PFS.
+Folder with R scripts for (1) summing unprotected non-WOTUS wetland area in each IL census tract and writing results to .csv files for visualization, (2) running statistical analyses evaluating the relationship between unprotected wetland area and CEJST fields, including FLD_ET, N_CLT_EOMI, and FLD_PFS
 
 ## County_Statistics
-Contains R scripts for for estimating county-level unprotected non-WOTUS wetland area and the corresponding uncertainty in aggregate and by wetland type. These results are written to .csv files which can be joined with county maps in ArcPro. 
+Folder with R scripts for for estimating county-level unprotected non-WOTUS wetland area and the corresponding uncertainty in aggregate and by wetland type. These results are written to .csv files which can be joined with county maps in ArcPro
 
 ## Flowline_Analyses
-Contains R scripts for (1) classifying unknown flowlines using connectivity rules in Table C3 and (2) quantifying flowline length in each category (phemeral, intermittent, perennial), and plotting those results.
+Folder with R scripts for (1) classifying unknown flowlines using connectivity rules in Table C3 and (2) quantifying flowline length in each category (phemeral, intermittent, perennial), and plotting those results
 
 ## Summary_Figures
-Contains .csv file and R script for plotting the Illinois wetland area breakdown across five categories: (1) historical change, (2) jurisdictional status (WOTUS v. non-WOTUS), (3) protection status (protected v. unprotected), (4) protection level of protected areas, and (5) wetland types of unprotected areas. 
+Folder with .csv file and R script for plotting the Illinois wetland area breakdown across five categories: (1) historical change, (2) jurisdictional status (WOTUS v. non-WOTUS), (3) protection status (protected v. unprotected), (4) protection level of protected areas, and (5) wetland types of unprotected areas 
 
 
