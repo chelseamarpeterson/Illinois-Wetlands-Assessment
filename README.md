@@ -1,5 +1,5 @@
 # Illinois-Wetlands-Assessment
-Public repository for data files and R code used to quantify area of unprotected non-WOTUS Illinois wetlands and evaluate potential impacts on vulnerable communities. The repository is organized by folder, with each representing a separate pre-processing or analysis step
+Public repository for ArcPro models and R code used to quantify area of unprotected non-WOTUS Illinois wetlands and evaluate potential impacts on vulnerable communities. The repository is organized by folder, with each representing a separate pre-processing or analysis step
 
 ## ArcPro_Models
 Folder that contains ArcToolbox (.atbx) with all model builder files to:
