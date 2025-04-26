@@ -1,6 +1,5 @@
-path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results"
+path_to_nwi_data = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results/NWI_Data"
 path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
-
 
 library(dplyr)
 library(tidyr)
@@ -11,7 +10,7 @@ library(patchwork)
 AcPerHa = 2.47105
 
 # read in wetland table
-setwd(path_to_datafiles)
+setwd(path_to_nwi_data)
 ws.df = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect_Table.csv")
 
 # check area sums
@@ -155,30 +154,45 @@ cnty.type.sf = cnty.type.sum[which(cnty.type.sum$water_cutoff == "Seasonally Flo
 cnty.type.pf = cnty.type.sum[which(cnty.type.sum$water_cutoff == "Permanently Flooded"),]
 cnty.type.if = cnty.type.sum[which(cnty.type.sum$water_cutoff == "Intermittently Flooded"),]
 cnty.type.sf$uncertainty = (cnty.type.pf$mean - cnty.type.if$mean)/cnty.type.sf$mean
-
+cnty.tot.type.join = right_join(cnty.type.sf, wide.df, by="county")
 type.labs = c("Freshwater emergent wetland",
               "Freshwater forested/shrub wetland",
               "Freshwater pond")
 cnty.type.sf$type_lab = rep(0, nrow(cnty.type.sf))
 for (i in 1:3) { cnty.type.sf$type_lab[which(cnty.type.sf$wetland_type == wetland.types[i])] = type.labs[i] }
-p1 = ggplot(wide.df, aes(x=log(mean_SF), y=log(area_uncert))) +
-            geom_point(size=2) + 
-            labs(x="Log(Mean Unprotected Non-WOTUS Area [ha])", y="Log(Area Uncertainty)") + 
+p1 = ggplot(wide.df, 
+            aes(x=log(mean_SF), 
+                y=log(area_uncert))) +
+            geom_point(size=2) + #geom_smooth(method='lm')+
+            labs(x="Log(Total UP-NW Area [ha])", 
+                 y="Log(Total Area Uncertainty)") + 
             xlim(5,10) +
             theme(text = element_text(size=12))
-p2 = ggplot(cnty.type.sf, 
+p2 = ggplot(cnty.tot.type.join, 
+            aes(x=log(mean), 
+                y=log(area_uncert), 
+                color=type_lab,
+                shape=type_lab)) + 
+            geom_point(size=2) + #geom_smooth(method='lm')+
+            labs(x="", 
+                 y="",
+                 color="Wetland Type",shape="Wetland Type") +
+            theme(text = element_text(size=12))
+p3 = ggplot(cnty.tot.type.join, 
             aes(x=log(mean), 
                 y=log(uncertainty), 
                 color=type_lab,
                 shape=type_lab)) + 
-            geom_point(size=2) + 
-            labs(x="Log(Mean Unprotected Non-WOTUS Area [ha])", y="",
+            geom_point(size=2) + #geom_smooth(method='lm')+
+            labs(x="Log(Type UP-NW Area [ha])", 
+                 y="Log(Type Area Uncertainty)",
                  color="Wetland Type",shape="Wetland Type") +
-            theme(text = element_text(size=12))
-p3 = p1 + p2 
-p3
+            theme(text = element_text(size=12)) +
+            guides(color="none", shape="none")
+p4 = (p1 + p2)/(plot_spacer() + p3)
+p4
 ggsave("County_Statistics/FigureA2_WetlandArea_Uncertainty.png", 
-       plot = p3, width = 32, height = 14, units="cm")
+       plot = p3, width = 16, height = 16, units="cm")
 
 # write file
 write.csv(cnty.type.sum[,c("county","wetland_type","water_cutoff","mean","min","max")], 
