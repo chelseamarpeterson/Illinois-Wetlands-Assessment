@@ -183,7 +183,7 @@ p3 = ggplot(cnty.tot.type.join,
                 y=log(uncertainty), 
                 color=type_lab,
                 shape=type_lab)) + 
-            geom_point(size=2) + #geom_smooth(method='lm')+
+            geom_point(size=2) + geom_smooth(method='lm')+
             labs(x="Log(Type UP-NW Area [ha])", 
                  y="Log(Type Area Uncertainty)",
                  color="Wetland Type",shape="Wetland Type") +
@@ -192,8 +192,10 @@ p3 = ggplot(cnty.tot.type.join,
 p4 = (p1 + p2)/(plot_spacer() + p3)
 p4
 ggsave("County_Statistics/FigureA2_WetlandArea_Uncertainty.png", 
-       plot = p3, width = 16, height = 16, units="cm")
+       plot=p4, width=24, height=16, units="cm")
 
+lm(log(uncertainty)~log(mean)*type_lab, 
+   data=cnty.tot.type.join)
 # write file
 write.csv(cnty.type.sum[,c("county","wetland_type","water_cutoff","mean","min","max")], 
           "County_Statistics/IL_WS_Step13_County_Type_Stats.csv",row.names = F)
