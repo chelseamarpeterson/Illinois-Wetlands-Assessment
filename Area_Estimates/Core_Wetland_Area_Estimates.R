@@ -347,6 +347,7 @@ ggsave("Area_Estimates/Figure1_Jurisdictional_Plot.png",
 for (i in 1:4) {
   print(area.comb.melt[which(area.comb.melt$Reason == reason.order[i]),c("Mean","Minimum","Maximum")][area.mean.sort$ix,])
 }
+
 ################################################################################
 # Figure 2 & Table 2: calculate and plot area of non-jurisdictional wetland in 
 # each GAP category
@@ -611,6 +612,23 @@ ggsave("Area_Estimates/Figure2_Unprotected_Plot_Raw.png",
        plot = p3, width = 36, height = 12, units="cm")
 
 # estimate percentage by which county ordinances increase MFB area
-x = gap.area.df[gap.area.df$gap == "County stormwater ordinance","area"]/gap.area.df[gap.area.df$gap == "Managed for biodiversity","area"]*100
+mb = gap.area.df[gap.area.df$gap == "Managed for biodiversity","area"]
+mmu = gap.area.df[gap.area.df$gap == "Managed for multiple uses","area"]
+cso = gap.area.df[gap.area.df$gap == "County stormwater ordinance","area"]
+x = cso/(mb+mmu)
 min(x)
 max(x)
+min(cso)
+max(cso)
+min(mb+mmu)
+max(mb+mmu)
+mb.mmu.stats.df = gap.area.df[which(gap.area.df$gap %in% c("Managed for biodiversity","Managed for multiple uses")),] %>%
+                  group_by(water_cutoff, perm_level, buf_dist) %>% 
+                  summarize(area = sum(area)) 
+mb.mmu.sum.df = mb.mmu.stats.df %>% 
+                group_by(water_cutoff) %>% 
+                summarize(mean = mean(area),
+                          min = min(area),
+                          max = max(area)) 
+round(min(mb.mmu.sum.df$min))
+round(max(mb.mmu.sum.df$max))
