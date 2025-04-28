@@ -1,4 +1,4 @@
-path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results/NWI_Data"
+path_to_nwi_data = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results/NWI_Data"
 path_to_cejst = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Databases/CEJST"
 path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
 
@@ -14,7 +14,7 @@ library(rethinking)
 setwd(path_to_cejst)
 cj.df = read.csv("IL_CJEST_Data.csv")
 
-setwd(path_to_datafiles)
+setwd(path_to_nwi_data)
 area.df = read.csv("IL_WS_Step16_CJEST_Unprotected_Area.csv")
 
 # water regimes
@@ -144,8 +144,7 @@ m.list[["w"]] = m.w
 
 # sample posterior distributions
 setwd(path_to_gitrepo)
-#for (i in 1:n.m) {
-for (i in 1:2) {
+for (i in 1:n.m) {
   # get info for ith model
   m.i = models[i]
   model.i = m.list[[m.i]]
