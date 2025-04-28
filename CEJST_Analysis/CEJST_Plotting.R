@@ -82,7 +82,7 @@ p1 = ggplot(m.stats[which(m.stats$model == model.labels[1]),],
                                color=factor(model, levels=model.labels[1])),
                            position=position_dodge(0.5), 
                            height=0.2) +
-            labs(x="Posterior Mean Area Difference (Indicator True - False)\n[Unprotected Wetland ha/1000 Census Tract ha]",
+            labs(x="Posterior Mean Area Difference (Indicator True - False)\n[Unprotected non-WOTUS wetland ha/1000 tract ha]",
                  y="Wetland Flood Frequency Cutoff") +
             guides(color=guide_legend(title="CEJST Indicator")) +
             scale_color_manual(values=c("blue")) + 
@@ -101,7 +101,7 @@ p2 = ggplot(m.stats[which(m.stats$model == model.labels[2]),],
                                color=factor(model, levels=model.labels[2])),
                            position=position_dodge(0.5), 
                            height=0.2) +
-            labs(x="Posterior Mean Area Difference (Indicator True - False)\n[Unprotected Wetland ha/1000 Census Tract ha]",
+            labs(x="Posterior Mean Area Difference (Indicator True - False)\n[unprotected non-WOTUS wetland ha/1000 tract ha]",
                  y="Wetland Flood Frequency Cutoff") +
             guides(color=guide_legend(title="CEJST Indicator")) +
             scale_color_manual(values=c("red")) + 
@@ -126,7 +126,7 @@ ggplot(m.stats,
                            color=factor(model, levels=model.labels)),
                        position=position_dodge(0.5), 
                        height=0.2) +
-        labs(x="Posterior Mean Area Difference (Indicator True - False)\n[Unprotected Wetland ha/1000 Census Tract ha]",
+        labs(x="Posterior Mean Area Difference (Indicator True - False)\n[unprotected Wetland ha/1000 Census Tract ha]",
              y="Wetland Flood Frequency Cutoff") +
         guides(color=guide_legend(title="CEJST Indicator")) +
         scale_x_continuous(breaks=seq(-6,0,2),

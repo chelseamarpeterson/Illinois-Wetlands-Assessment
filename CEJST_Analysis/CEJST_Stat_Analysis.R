@@ -1,4 +1,4 @@
-path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results"
+path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results/NWI_Data"
 path_to_cejst = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Databases/CEJST"
 path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
 
@@ -91,12 +91,12 @@ m.f = ulam(alist(area_norm ~ normal(mu, sigma),
                  log(mu) <- a[wid,fid],
                  matrix[wid,fid]: a ~ dnorm(0,1),
                  sigma ~ dexp(1)),
-           data=area.list, chains=1, log_lik=T)
+           data=area.list, chains=5, log_lik=T)
 m.c = ulam(alist(area_norm ~ normal(mu, sigma),
                  log(mu) <- a[wid,cid],
                  matrix[wid,cid]: a ~ dnorm(0,1),
                  sigma ~ dexp(1)),
-           data=area.list, chains=1, log_lik=T)
+           data=area.list, chains=5, log_lik=T)
 
 # populatin, agriculture, and building loss plus wildfire risk (secondary analyses)
 m.p = ulam(alist(area_norm ~ normal(mu, sigma),
@@ -144,7 +144,8 @@ m.list[["w"]] = m.w
 
 # sample posterior distributions
 setwd(path_to_gitrepo)
-for (i in 1:n.m) {
+#for (i in 1:n.m) {
+for (i in 1:2) {
   # get info for ith model
   m.i = models[i]
   model.i = m.list[[m.i]]
