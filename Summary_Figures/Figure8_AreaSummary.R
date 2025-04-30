@@ -86,7 +86,7 @@ p.cwa=ggplot(df.cwa,
               text = element_text(size=26),
               panel.grid = element_blank(),
               panel.background = element_rect(fill = "white")) +
-        scale_fill_manual(values=c("skyblue1","dodgerblue3","blue4"))
+        scale_fill_manual(values=c("deepskyblue","dodgerblue3","blue4"))
 ggsave("Summary_Figures/CWACoverage.png", plot = p.cwa, 
        width=22.75, height=36, units="cm") 
 

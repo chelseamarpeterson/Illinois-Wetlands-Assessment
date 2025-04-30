@@ -314,12 +314,12 @@ p1 = ggplot(area.stats.df, aes(x=mean,
                                         "Levin et al. (2002)" = "darkorange2",
                                         "Simmons et al. (2024)"="purple")) +
             scale_linetype_manual(values = c("This study"="solid",
-                                             "Gold (2024)"="dashed",
-                                             "Lane et al. (2025)"="dotted",
-                                             "Levin et al. (2002)"="longdash",
-                                             "Simmons et al. (2024)"="twodash")) +
-            theme(text = element_text(size=12),
-                  legend.key.size = unit(0.7,'cm'))
+                                             "Gold (2024)"="longdash",
+                                             "Lane et al. (2025)"="twodash",
+                                             "Levin et al. (2002)"="dotted",
+                                             "Simmons et al. (2024)"="dashed")) +
+            theme(text = element_text(size=15),
+                  legend.key.size = unit(0.8,'cm'))
 p2 = ggplot(area.comb.melt) +
             geom_col_pattern(aes(x=Mean, 
                   y = factor(water_label, levels=water.reg.labels),
@@ -334,14 +334,13 @@ p2 = ggplot(area.comb.melt) +
                  fill="Reason for Lack\nof Federal Jurisdiction",
                  pattern="Reason for Lack\nof Federal Jurisdiction") +
             scale_x_continuous(limits=c(0,400000), labels=scales::comma) +
-            theme(text = element_text(size=12),
-                  legend.key.size = unit(0.7,'cm'),
+            theme(text = element_text(size=15),
+                  legend.key.size = unit(0.8,'cm'),
                   axis.text.y=element_blank())
 p3 = p1 + p2
-p3
 setwd(path_to_gitrepo)
-ggsave("Area_Estimates/Figure1_Jurisdictional_Plot.png", 
-        plot = p3, width = 36, height = 12, units="cm")
+ggsave("Area_Estimates/Figure1_Jurisdictional_Plot.jpeg", 
+        plot = p3, width = 42, height = 14, units="cm")
 
 # print areas by reason
 for (i in 1:4) {
@@ -367,16 +366,16 @@ pro.cnties = c("Cook","DeKalb","DuPage","Grundy","Kane","McHenry","Lake","Will")
 n.cp = length(pro.cnties)
 
 ## step 3: create column that combines GAP and county information
-gap.df$Protected_Status = rep("No protection", nrow(gap.df))
+gap.df$Protected_Status = rep("Unprotected", nrow(gap.df))
 for (i in seq(1,2)) {gap.df$Protected_Status[which(gap.df$GAP_Sts == i)] = "Managed for biodiversity"}
 gap.df$Protected_Status[which((gap.df$NAME %in% pro.cnties) & !(gap.df$GAP_Sts %in% c(1,2)))] = "County stormwater ordinance"
 gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts == 3))] = "Managed for multiple uses"
-gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts == 4))] = "No protection"
+gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts == 4))] = "Unprotected"
 
 # create vectors for protection level categories
 pro.cats = sort(unique(gap.df$Protected_Status))
 n.cats = length(pro.cats)
-pro.order = c("No protection","Managed for multiple uses","County stormwater ordinance","Managed for biodiversity")
+pro.order = c("Unprotected","Managed for multiple uses","County stormwater ordinance","Managed for biodiversity")
 
 ## step 4: sum non-WOTUS area in each gap category
 gap.area.df = data.frame(matrix(nrow=n.cats*n.w*n.p*n.b, ncol=5))
@@ -408,10 +407,10 @@ gap.stats.df = gap.area.df %>%
                          min = min(area),
                          max = max(area))
 
-## step 6: estimate area with no protection (Table 2, columns 2-4)
+## step 6: estimate area with Unprotected (Table 2, columns 2-4)
 
 # absolute area
-np.stats.df = gap.stats.df[which(gap.stats.df$gap == "No protection"),]
+np.stats.df = gap.stats.df[which(gap.stats.df$gap == "Unprotected"),]
 np.area.sort = sort(np.stats.df$mean, index.return=TRUE)
 np.stats.df$range = np.stats.df$max - np.stats.df$min
 np.stats.df[np.area.sort$ix,]
@@ -467,7 +466,7 @@ wetland.types = sort(unique(gap.df$WETLAND_TYPE))
 n.t = length(wetland.types)
 
 # add unprotected column
-gap.df$Not_Protected = 1*(gap.df$Protected_Status == "No protection")
+gap.df$Not_Protected = 1*(gap.df$Protected_Status == "Unprotected")
 
 # estimate unprotected non-WOTUS area in each type by water regime
 type.area.df = data.frame(matrix(nrow=n.t*n.w*n.p*n.b, ncol=5))
@@ -585,8 +584,8 @@ p1 = ggplot(gap.stats.df) +
                                labels=c("Gold (2024)","Simmons et al. (2024)")) +
             scale_fill_manual(values=c("darkgray","coral1","darkcyan","darkorchid")) +
             scale_pattern_manual(values=c("stripe","none","crosshatch","circle")) +
-            theme(text = element_text(size=12),
-                  legend.key.size = unit(0.7,'cm'))
+            theme(text = element_text(size=15),
+                  legend.key.size = unit(0.8,'cm'))
 p2 = ggplot(type.area.sum) + 
             geom_col_pattern(aes(x=mean, 
                                  y=factor(water_label, levels=water.reg.labels),
@@ -604,12 +603,11 @@ p2 = ggplot(type.area.sum) +
                    pattern=guide_legend(title="Wetland Type")) +
             scale_fill_manual(values=c("dodgerblue3","darkgreen","burlywood4")) +
             scale_pattern_manual(values=c("stripe","none","crosshatch")) +
-            theme(text = element_text(size=12),
-                  legend.key.size = unit(0.7,'cm'))
+            theme(text = element_text(size=15),
+                  legend.key.size = unit(0.8,'cm'))
 p3 = p1 + p2
-p3
-ggsave("Area_Estimates/Figure2_Unprotected_Plot_Raw.png", 
-       plot = p3, width = 36, height = 12, units="cm")
+ggsave("Area_Estimates/Figure2_Unprotected_Plot.jpeg", 
+       plot = p3, width = 42, height = 14, units="cm")
 
 # estimate percentage by which county ordinances increase MFB area
 mb = gap.area.df[gap.area.df$gap == "Managed for biodiversity","area"]
