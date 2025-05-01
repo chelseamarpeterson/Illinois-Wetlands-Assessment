@@ -366,16 +366,16 @@ pro.cnties = c("Cook","DeKalb","DuPage","Grundy","Kane","McHenry","Lake","Will")
 n.cp = length(pro.cnties)
 
 ## step 3: create column that combines GAP and county information
-gap.df$Protected_Status = rep("Unprotected", nrow(gap.df))
+gap.df$Protected_Status = rep("No protection", nrow(gap.df))
 for (i in seq(1,2)) {gap.df$Protected_Status[which(gap.df$GAP_Sts == i)] = "Managed for biodiversity"}
 gap.df$Protected_Status[which((gap.df$NAME %in% pro.cnties) & !(gap.df$GAP_Sts %in% c(1,2)))] = "County stormwater ordinance"
 gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts == 3))] = "Managed for multiple uses"
-gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts == 4))] = "Unprotected"
+gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts == 4))] = "No protection"
 
 # create vectors for protection level categories
 pro.cats = sort(unique(gap.df$Protected_Status))
 n.cats = length(pro.cats)
-pro.order = c("Unprotected","Managed for multiple uses","County stormwater ordinance","Managed for biodiversity")
+pro.order = c("No protection","Managed for multiple uses","County stormwater ordinance","Managed for biodiversity")
 
 ## step 4: sum non-WOTUS area in each gap category
 gap.area.df = data.frame(matrix(nrow=n.cats*n.w*n.p*n.b, ncol=5))
@@ -407,10 +407,10 @@ gap.stats.df = gap.area.df %>%
                          min = min(area),
                          max = max(area))
 
-## step 6: estimate area with Unprotected (Table 2, columns 2-4)
+## step 6: estimate area with no protection (Table 2, columns 2-4)
 
 # absolute area
-np.stats.df = gap.stats.df[which(gap.stats.df$gap == "Unprotected"),]
+np.stats.df = gap.stats.df[which(gap.stats.df$gap == "No protection"),]
 np.area.sort = sort(np.stats.df$mean, index.return=TRUE)
 np.stats.df$range = np.stats.df$max - np.stats.df$min
 np.stats.df[np.area.sort$ix,]
@@ -466,7 +466,7 @@ wetland.types = sort(unique(gap.df$WETLAND_TYPE))
 n.t = length(wetland.types)
 
 # add unprotected column
-gap.df$Not_Protected = 1*(gap.df$Protected_Status == "Unprotected")
+gap.df$Not_Protected = 1*(gap.df$Protected_Status == "No protection")
 
 # estimate unprotected non-WOTUS area in each type by water regime
 type.area.df = data.frame(matrix(nrow=n.t*n.w*n.p*n.b, ncol=5))
