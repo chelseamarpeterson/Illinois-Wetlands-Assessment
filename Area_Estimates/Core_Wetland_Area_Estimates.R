@@ -20,7 +20,7 @@ AcPerHa = 2.47105
 setwd(path_to_nwi_data)
 
 ## step 1: estimate total area of wetlands in the state (397,186 ha)
-base.df = read.csv("IL_WS_Step10_WaterRegime_Table.csv")
+base.df = read.csv("IL_WS_Step10_WaterRegime.csv")
 total.state.area.ha = sum(base.df$Area_Ha)
 
 # check for area agreement
@@ -28,7 +28,7 @@ total.state.area.ha
 sum(base.df$Area_Acres)/AcPerHa
 
 ## step 2: read in table for wetlands above 0.10 ac (396,572 ha)
-ws.df = read.csv("IL_WS_Step11_AreaThreshold_Table.csv")
+ws.df = read.csv("IL_WS_Step11_AreaThreshold.csv")
 
 # check for area agreement
 sum(ws.df$Area_Ha)
@@ -196,7 +196,7 @@ round(data.frame(perc.del.stats.df[area.mean.sort$ix,c("mean","min","max")]),8)
 setwd(path_to_gitrepo)
 
 # read in levin (2002) and Simmmons et al. (2024) estimates
-ls.df = read.csv("Area_Estimates/Previous_Studies/Levins_Simmons_Lane_Estimates_Acres.csv", sep=",")
+ls.df = read.csv("Area_Estimates/Previous_Studies/Fixed_Estimates_Acres.csv", sep=",")
 ls.df.area = ls.df[which(ls.df$type == "area"),-which(colnames(ls.df) %in% c("type","unit"))]
 
 # Levin et al. (2002) estimate
@@ -221,6 +221,14 @@ lan.est.df[,c("mean","min","max")] = lan.est.df[,c("mean","min","max")]/AcPerHa
 for (i in 1:n.w) {
   lan.est.df$water_cutoff = rev(water.regimes)[i]
   area.stats.df = rbind(area.stats.df, lan.est.df[,colnames(area.stats.df)])
+}
+
+# NRDC (2025) estimate
+nrdc.est.df = ls.df.area[which(ls.df.area$study == "NRDC (2025)"),]
+nrdc.est.df[,c("mean","min","max")] = nrdc.est.df[,c("mean","min","max")]/AcPerHa
+for (i in 1:n.w) {
+  nrdc.est.df$water_cutoff = rev(water.regimes)[i]
+  area.stats.df = rbind(area.stats.df, nrdc.est.df[,colnames(area.stats.df)])
 }
 
 # Gold (2024) estimates
@@ -338,6 +346,7 @@ p2 = ggplot(area.comb.melt) +
                   legend.key.size = unit(0.8,'cm'),
                   axis.text.y=element_blank())
 p3 = p1 + p2
+p3
 setwd(path_to_gitrepo)
 ggsave("Area_Estimates/Figure1_Jurisdictional_Plot.jpeg", 
         plot = p3, width = 42, height = 14, units="cm")
