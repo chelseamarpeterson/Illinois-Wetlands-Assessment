@@ -383,14 +383,14 @@ gap.df$Protected_Status[which(!(gap.df$NAME %in% pro.cnties) & (gap.df$GAP_Sts =
 
 # create vectors for protection level categories
 pro.cats = sort(unique(gap.df$Protected_Status))
-n.cats = length(pro.cats)
+n.c = length(pro.cats)
 pro.order = c("Unprotected","Managed for multiple uses","County stormwater ordinance","Managed for biodiversity")
 
 ## step 4: sum non-WOTUS area in each gap category
-gap.area.df = data.frame(matrix(nrow=n.cats*n.w*n.p*n.b, ncol=5))
+gap.area.df = data.frame(matrix(nrow=n.c*n.w*n.p*n.b, ncol=5))
 colnames(gap.area.df) = c("gap","water_cutoff","perm_level","buf_dist","area")
 n = 1
-for (g in 1:n.cats) {
+for (g in 1:n.c) {
   gap.df.sub = gap.df[which(gap.df$Protected_Status == pro.cats[g]),]
   for (j in 1:n.w) {
     for (k in 1:n.p) {

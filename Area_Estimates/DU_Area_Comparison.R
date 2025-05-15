@@ -8,6 +8,9 @@ library(ggplot2)
 library(reshape2)
 library(ggpattern)
 
+################################################################################
+# step 1: compare jurisdictional status between original NWI and DU
+
 ## read in original NWI and DU table for wetlands above 0.10 ac (396,572 ha)
 nwi.df = read.csv("IL_WS_Step11_AreaThreshold.csv")
 du.df = read.csv("Step10_DU_IL_AreaThreshold.csv")
@@ -239,18 +242,170 @@ ggplot(type.stats.df, aes(x = mean,
                            group=factor(dataset, levels=datasets), 
                            color=factor(dataset, levels=datasets),
                            linetype=factor(dataset, levels=datasets))) + 
+       geom_line(linewidth=0.8) +
+       geom_ribbon(data = type.stats.df,
+                   aes(xmin=min, xmax=max, 
+                       group=factor(dataset, levels=datasets), 
+                       color=factor(dataset, levels=datasets),
+                       linetype=factor(dataset, levels=datasets)), 
+                   alpha=0.1, linewidth=0.9) + 
+       labs(y="Wetland Flood Frequency Cutoff",
+            x="Mean Non-WOTUS Wetland Area (ha)",
+            fill="Reason for Lack\nof Federal Jurisdiction") +
+       scale_x_continuous(labels=scales::comma) +
+       theme(text = element_text(size=15),
+             legend.key.size = unit(0.8,'cm'),
+             axis.text.y=element_blank()) +
+       facet_wrap(.~type,scales = "free")
+
+################################################################################
+# step 2: compare protection levels between original NWI and DU
+
+## read in original NWI and DU table for wetlands above 0.10 ac (396,572 ha)
+nwi.df2 = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect.csv")
+du.df2 = read.csv("Step12_DU_IL_GAP_Union_CntyIntersect.csv")
+
+# update du column name
+colnames(du.df2)[which(colnames(du.df2) == "WETLAND_TY")] = "WETLAND_TYPE"
+
+# compare total areas 
+sum(nwi.df$Area_Ha); sum(nwi.df2$Area_Ha)
+sum(du.df$Area_Ha); sum(du.df2$Area_Ha)
+
+## specify counties with stormwater ordinances that protect wetlands
+pro.cnties = c("Cook","DeKalb","DuPage","Grundy","Kane","McHenry","Lake","Will")
+n.cp = length(pro.cnties)
+
+## create column that combines GAP and county information
+nwi.df2$Protected_Status = rep("Unprotected", nrow(nwi.df2))
+du.df2$Protected_Status = rep("Unprotected", nrow(du.df2))
+for (i in seq(1,2)) {nwi.df2$Protected_Status[which(nwi.df2$GAP_Sts == i)] = "Managed for biodiversity"}
+for (i in seq(1,2)) {du.df2$Protected_Status[which(du.df2$GAP_Sts == i)] = "Managed for biodiversity"}
+nwi.df2$Protected_Status[which((nwi.df2$NAME %in% pro.cnties) & !(nwi.df2$GAP_Sts %in% c(1,2)))] = "County stormwater ordinance"
+du.df2$Protected_Status[which((du.df2$NAME %in% pro.cnties) & !(du.df2$GAP_Sts %in% c(1,2)))] = "County stormwater ordinance"
+nwi.df2$Protected_Status[which(!(nwi.df2$NAME %in% pro.cnties) & (nwi.df2$GAP_Sts == 3))] = "Managed for multiple uses"
+du.df2$Protected_Status[which(!(du.df2$NAME %in% pro.cnties) & (du.df2$GAP_Sts == 3))] = "Managed for multiple uses"
+nwi.df2$Protected_Status[which(!(nwi.df2$NAME %in% pro.cnties) & (nwi.df2$GAP_Sts == 4))] = "Unprotected"
+du.df2$Protected_Status[which(!(du.df2$NAME %in% pro.cnties) & (du.df2$GAP_Sts == 4))] = "Unprotected"
+
+# create vectors for protection level categories
+pro.cats = sort(unique(nwi.df2$Protected_Status))
+n.c = length(pro.cats)
+pro.order = c("Unprotected","Managed for multiple uses","County stormwater ordinance","Managed for biodiversity")
+
+## sum non-WOTUS area in each gap category
+gap.area.df = data.frame(matrix(nrow=2*n.c*n.w*n.p*n.b, ncol=6))
+colnames(gap.area.df) = c("dataset","gap","water_cutoff","perm_level","buf_dist","area")
+n = 1
+for (d in 1:2) {
+  if (d == 1) {
+    gap.df = nwi.df2
+  } else {
+    gap.df = du.df2
+  }
+  for (g in 1:n.c) {
+    gap.df.sub = gap.df[which(gap.df$Protected_Status == pro.cats[g]),]
+    for (j in 1:n.w) {
+      for (k in 1:n.p) {
+        for (b in 1:n.b) {
+          gap.area.df[n,"dataset"] = datasets[d]
+          gap.area.df[n,"gap"] = pro.cats[g]
+          gap.area.df[n,"water_cutoff"] = water.regimes[j]
+          gap.area.df[n,"perm_level"] = perm.levels[k]
+          gap.area.df[n,"buf_dist"] = buf.dists[b]
+          buf.ws.col = paste("Waters_Intersect", perm.abrvs[k], buf.dists[b], sep="_")
+          wrs = water.regimes[1:j]
+          wrs.inds = !(gap.df.sub$WATER_REGI %in% wrs)
+          gap.area.df[n,"area"] = sum(gap.df.sub[which(wrs.inds | (gap.df.sub$Within_Levee == 1 | gap.df.sub[,buf.ws.col] == 0)),"Area_Ha"])
+          n = n + 1
+        }
+      }
+    }
+  }
+}
+
+# calculate area statistics for each dataset, gap category, and water cutoff
+gap.stats.df = gap.area.df %>%
+               group_by(dataset, gap, water_cutoff) %>% 
+               summarize(mean = mean(area),
+                         min = min(area),
+                        max = max(area))
+
+# compare area statistics between datasets
+gap.stats.df$water_label = rep(0, nrow(gap.stats.df))
+for (i in 1:n.w) { gap.stats.df$water_label[which(gap.stats.df$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
+ggplot(gap.stats.df, aes(x=mean, 
+                         y = factor(water_label, levels=water.reg.labels),
+                         group=factor(dataset, levels=datasets), 
+                         color=factor(dataset, levels=datasets),
+                         linetype=factor(dataset, levels=datasets))) + 
+       geom_line(linewidth=0.8) +
+       facet_wrap(.~gap, scales="free_x") +
+       labs(x="Area (ha)",y="",color="Dataset",
+            group="Dataset",linetype="Dataset")
+
+## estimate unprotected non-WOTUS area in each type by water regime
+
+# remove singular empty row
+nwi.df2 = nwi.df2[-which(nwi.df2$WETLAND_TYPE == ""),]
+
+# character vector for types
+wetland.types = sort(unique(nwi.df2$WETLAND_TYPE))
+n.t = length(wetland.types)
+
+# add unprotected column
+nwi.df2$Not_Protected = 1*(nwi.df2$Protected_Status == "Unprotected")
+du.df2$Not_Protected = 1*(du.df2$Protected_Status == "Unprotected")
+
+# sum areas
+type.area.df = data.frame(matrix(nrow=2*n.t*n.w*n.p*n.b, ncol=6))
+colnames(type.area.df) = c("dataset","type","water_cutoff","perm_level","buf_dist","area")
+n = 1
+for (d in 1:2) {
+  if (d == 1) {
+    gap.df = nwi.df2
+  } else {
+    gap.df = du.df2
+  }
+  for (i in 1:n.t) {
+    df.sub = gap.df[which(gap.df$WETLAND_TYPE == wetland.types[i]),]
+    for (j in 1:n.w) {
+      for (k in 1:n.p) {
+        for (b in 1:n.b) {
+          type.area.df[n,"dataset"] = datasets[d]
+          type.area.df[n,"type"] = wetland.types[i]
+          type.area.df[n,"water_cutoff"] = water.regimes[j]
+          type.area.df[n,"perm_level"] = perm.levels[k]
+          type.area.df[n,"buf_dist"] = buf.dists[b]
+          buf.ws.col = paste("Waters_Intersect", perm.abrvs[k], buf.dists[b], sep="_")
+          wrs = water.regimes[1:j]
+          wrs.inds = !(df.sub$WATER_REGI %in% wrs)
+          non.jurisdictional.inds = 1*(wrs.inds | (df.sub$Within_Levee == 1 | df.sub[,buf.ws.col] == 0))
+          non.protected.inds = df.sub$Not_Protected
+          type.area.df[n,"area"] = sum(df.sub[which(non.jurisdictional.inds == 1 & non.protected.inds == 1),"Area_Ha"])
+          n = n + 1
+        }
+      }
+    }
+  }
+}
+
+# summary statistics by wetland type
+type.area.sum = type.area.df %>%
+                group_by(dataset, type, water_cutoff) %>% 
+                summarize(mean = mean(area),
+                          min = min(area),
+                          max = max(area))
+
+# plot area by type
+type.area.sum$water_label = rep(0, nrow(type.area.sum))
+for (i in 1:n.w) { type.area.sum$water_label[which(type.area.sum$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
+ggplot(type.area.sum, aes(x=mean, 
+                         y = factor(water_label, levels=water.reg.labels),
+                         group=factor(dataset, levels=datasets), 
+                         color=factor(dataset, levels=datasets),
+                         linetype=factor(dataset, levels=datasets))) + 
       geom_line(linewidth=0.8) +
-      geom_ribbon(data = type.stats.df,
-                  aes(xmin=min, xmax=max, 
-                      group=factor(dataset, levels=datasets), 
-                      color=factor(dataset, levels=datasets),
-                      linetype=factor(dataset, levels=datasets)), 
-                  alpha=0.1, linewidth=0.9) + 
-      labs(y="Wetland Flood Frequency Cutoff",
-           x="Mean Non-WOTUS Wetland Area (ha)",
-           fill="Reason for Lack\nof Federal Jurisdiction") +
-      scale_x_continuous(labels=scales::comma) +
-      theme(text = element_text(size=15),
-            legend.key.size = unit(0.8,'cm'),
-            axis.text.y=element_blank()) +
-      facet_wrap(.~type,scales = "free")
+      facet_wrap(.~type, scales="free_x") +
+      labs(x="Area (ha)",y="",color="Dataset",
+           group="Dataset",linetype="Dataset")
