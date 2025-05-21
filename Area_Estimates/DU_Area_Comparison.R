@@ -9,7 +9,65 @@ library(reshape2)
 library(ggpattern)
 
 ################################################################################
-# step 1: compare jurisdictional status between original NWI and DU
+# step 1: comparing effects of exclusions between original NWI and DU
+
+## read in DU x NLC intersect table
+du.nlcd.df = read.csv("Step5_DU_IL_NonDeep_NLCD_Intersect.csv")
+
+# total area calculation
+sum(du.nlcd.df$Area_Ha_NLCD)
+length(unique(du.nlcd.df$FID_Step4_DU_IL_NonDeep))
+
+# remove cultivated crops
+du.no82.df = du.nlcd.df[-which(du.nlcd.df$gridcode == 82),]
+round(sum(du.no82.df$Area_Ha_NLCD))
+length(unique(du.no82.df$FID_Step4_DU_IL_NonDeep))
+
+# remove developed medium intensity
+du.no23.df = du.no82.df[-which(du.no82.df$gridcode == 23),]
+round(sum(du.no23.df$Area_Ha_NLCD))
+length(unique(du.no23.df$FID_Step4_DU_IL_NonDeep))
+
+# remove developed high intensity
+du.no24.df = du.no23.df[-which(du.no23.df$gridcode == 24),]
+round(sum(du.no24.df$Area_Ha_NLCD))
+length(unique(du.no24.df$FID_Step4_DU_IL_NonDeep))
+
+## read in DU summary table
+nwi.du.areas = read.csv("NWI_DU_Exclusions_Summary.csv")
+colnames(nwi.du.areas) = c("dataset","exclusion","area","count")
+nwi.du.areas$area = as.numeric(nwi.du.areas$area)
+ex.order = unique(nwi.du.areas$exclusion)
+datasets = c("Original NWI 1980-1987","Ducks Unlimited 2005")
+p1 = ggplot(nwi.du.areas, aes(y=factor(exclusion, levels=rev(ex.order)), 
+                              x=area, 
+                              group=factor(dataset, levels=datasets),
+                              color=factor(dataset, levels=datasets),
+                              linetype=factor(dataset, levels=datasets))) + 
+            geom_line(linewidth=1) + 
+            labs(y="Exclusion",x="Area (ha)",
+                 group="Dataset",color="Dataset",
+                 linetype="Dataset") + 
+            scale_color_manual(values=c("forestgreen","steelblue4")) +
+            scale_x_continuous(labels=scales::comma,limits=c(375000,830000)) +
+            theme(text=element_text(size=12), legend.position="none")
+p2 = ggplot(nwi.du.areas, aes(y=factor(exclusion, levels=rev(ex.order)), 
+                              x=count, 
+                              group=factor(dataset, levels=datasets),
+                              color=factor(dataset, levels=datasets),
+                              linetype=factor(dataset, levels=datasets))) + 
+            geom_line(linewidth=1) + 
+            labs(y="",x="Polygon count",
+                 group="Dataset",color="Dataset",
+                 linetype="Dataset") + 
+            scale_color_manual(values=c("forestgreen","steelblue4")) +
+            scale_x_continuous(labels=scales::comma,limits=c(195000,500000)) +
+            theme(text=element_text(size=12),
+                  axis.text.y=element_blank())
+p1 + p2
+
+################################################################################
+# step 2: compare jurisdictional status between original NWI and DU
 
 ## read in original NWI and DU table for wetlands above 0.10 ac (396,572 ha)
 nwi.df = read.csv("IL_WS_Step11_AreaThreshold.csv")
@@ -50,7 +108,6 @@ colnames(area.df) = c("dataset","water_cutoff","perm_level","buf_dist","area","d
                       "leveed_and_non_intersect","leveed_and_below_flood",
                       "non_intersect_and_below_flood","leveed_non_intersect_below_flood",
                       "pond","emergent","forest")
-datasets = c("Original NWI 1980-1987","Ducks Unlimited 2005")
 n = 1
 for (d in 1:2) {
   if (d == 1) {

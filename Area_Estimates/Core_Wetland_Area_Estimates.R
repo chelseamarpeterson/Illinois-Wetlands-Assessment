@@ -296,7 +296,7 @@ for (i in 1:n.w) { area.stats.df$water_label[which(area.stats.df$water_cutoff ==
 for (i in 1:n.w) { area.comb.melt$water_label[which(area.comb.melt$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
 
 # Figure 1
-studies = c("This study",sort(unique(area.stats.df$study))[1:4])
+studies = c("This study",sort(unique(area.stats.df$study))[1:5])
 reason.order = c("Below flood-frequency cutoff","Non-intersecting","Behind levee","Behind levee & non-intersecting")
 p1 = ggplot(area.stats.df, aes(x=mean, 
                                y=factor(water_label, levels=water.reg.labels), 
@@ -320,11 +320,13 @@ p1 = ggplot(area.stats.df, aes(x=mean,
                                         "Gold (2024)"="goldenrod1",
                                         "Lane et al. (2025)" = "green4",
                                         "Levin et al. (2002)" = "darkorange2",
+                                        "NRDC (2025)" = "dodgerblue4",
                                         "Simmons et al. (2024)"="purple")) +
             scale_linetype_manual(values = c("This study"="solid",
                                              "Gold (2024)"="longdash",
                                              "Lane et al. (2025)"="twodash",
                                              "Levin et al. (2002)"="dotted",
+                                             "NRDC (2025)"="dotdash",
                                              "Simmons et al. (2024)"="dashed")) +
             theme(text = element_text(size=15),
                   legend.key.size = unit(0.8,'cm'))
