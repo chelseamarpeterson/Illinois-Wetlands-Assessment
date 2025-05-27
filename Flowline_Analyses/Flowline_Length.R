@@ -1,5 +1,5 @@
 path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
-
+path_to_main = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment"
 setwd(path_to_gitrepo)
 
 library(ggplot2)
@@ -187,27 +187,66 @@ sum(water.int.df$Hydro_Class == 1) - sum(area.int.df$Hydro_Class == 1)
 ################################################################################
 # Figure A4: Plot length of flowlines by stream order
 
+setwd(path_to_main)
+
 # read in merged file with isolated flowlines
-fl.df = read.csv("Flowline_Analyses/NHDFlowline_IL_Step8_MergeIsolatedFlowlines.csv")
+fl.df = read.csv("Results/NHD_Data/NHDFlowline_IL_Step8_MergeIsolatedFlowlines.csv")
+fl.df.br = read.csv("Results/NHD_Data/NHDFlowline_IL_Step8_MergeIsolatedFlowlines_Brinkerhoff.csv")
+
+# check length columns
+sum(fl.df$lengthkm)
+sum(fl.df.br$lengthkm)
 
 # sum length by stream order
 fl.ord.sum = fl.df %>%
              group_by(streamorde) %>%
              summarize(total.length = sum(lengthkm))
 
+fl.ord.sum.br = fl.df.br %>%
+            group_by(streamorde) %>%
+            summarize(total.length = sum(lengthkm))
+
 # cumulative sum
 fl.ord.sum$cumulative.length = cumsum(fl.ord.sum$total.length)
+fl.ord.sum.br$cumulative.length = cumsum(fl.ord.sum.br$total.length)
+
+# sum by hydrologic class 
+fl.class.sum = fl.df %>%
+               group_by(Final_Hydro_Class) %>%
+               summarize(total.length = sum(lengthkm))
+
+fl.class.sum.br = fl.df.br %>%
+                  group_by(Brinkerhoff_Hydro_Class) %>%
+                  summarize(total.length = sum(lengthkm))
+fl.class.sum.br$Brinkerhoff_Hydro_Class[which(is.na(fl.class.sum.br$Brinkerhoff_Hydro_Class))]=4
+
+# add columns for dataset
+fl.class.sum$dataset = "Original NHDPlus"
+fl.class.sum.br$dataset = "Brinkerhoff et al. (2024)"
+colnames(fl.class.sum.br)[1] = "Final_Hydro_Class"
+fl.class.sum2 = rbind(fl.class.sum, fl.class.sum.br)
+
+# add column for types
+detail.labs = c("Non-isolated perennial","Non-isolated intermittent",
+                "Non-isolated ephemeral","Isolated")
+fl.class.sum2$type = c(detail.labs, detail.labs)
+
+# make plot
+ggplot(fl.class.sum2, aes(y=type, 
+                          x=total.length,
+                          fill=dataset)) + 
+       geom_bar(stat="identity",position="dodge") +
+       scale_x_continuous(labels=scales::comma) + 
+       labs(y="",x="Total Length (km)",fill="Dataset")
 
 # totals for isolated, eph, int, per
-types = c("Isolated","Ephemeral","Intermittent","Perennial")
-lengths = c(1491,2266,126675,62248)
+types = c("Perennial","Intermittent","Ephemeral","Isolated")
+lengths.org = c(1491,2266,126675,62248)
 cum.lengths = cumsum(lengths)
 hydro.df = data.frame(type = types,
                       length = lengths,
                       cum.length = cum.lengths)
 hydro.df$group = "Flow permanence &\nconnectivity class"
-detail.labs = c("Isolated","Non-isolated ephemeral",
-                "Non-isolated intermittent","Non-isolated perennial")
 hydro.df$type.detail = detail.labs
 
 # repeat hydro df for each stream order
@@ -219,9 +258,8 @@ for (i in 1:10) {
   hydro.df.rep = rbind(hydro.df.rep, hydro.df.add)
 }
 
-# plot cumulative sumlty='MyLegend'
+# plot in supplementary information
 fl.ord.sum$group = "Cumulative length based\non hydrologic classification"
-
 p1 = ggplot() + 
      geom_line(data=fl.ord.sum, 
                aes(x=factor(streamorde), 
@@ -258,3 +296,49 @@ p2 = ggplot() +
      theme(text = element_text(size=14),
            legend.key.size = unit(0.7,'cm'))  
 
+# total length in each hydrologic class by stream order
+fl.cls.ord.sum = fl.df %>%
+                 group_by(streamorde, Final_Hydro_Class) %>%
+                 summarize(total.length = sum(lengthkm))
+fl.cls.ord.sum.br = fl.df.br %>%
+                  group_by(streamorde, Brinkerhoff_Hydro_Class) %>%
+                  summarize(total.length = sum(lengthkm))
+fl.cls.ord.sum.br$Brinkerhoff_Hydro_Class[which(is.na(fl.cls.ord.sum.br$Brinkerhoff_Hydro_Class))]=4
+colnames(fl.cls.ord.sum.br)[2] = "Final_Hydro_Class"
+
+# combine datasets
+datasets = c("Original NHDPlus","Brinkerhoff et al. (2024)")
+fl.cls.ord.sum$dataset = "Original NHDPlus"
+fl.cls.ord.sum.br$dataset = "Brinkerhoff et al. (2024)"
+fl.cls.ord.sum2 = rbind(fl.cls.ord.sum, fl.cls.ord.sum.br)
+fl.cls.ord.sum2$type.detail = rep(0, nrow(fl.cls.ord.sum2))
+for (i in 1:4) { fl.cls.ord.sum2$type.detail[which(fl.cls.ord.sum2$Final_Hydro_Class == i)] = detail.labs[i] }
+fl.cls.ord.sum2$cumulative.length = rep(0, nrow(fl.cls.ord.sum2))
+fl.cls.ord.cumsum2 = data.frame(matrix(nrow=0,ncol=6))
+for (i in 1:2) {
+  i.df = fl.cls.ord.sum2[which(fl.cls.ord.sum2$dataset == datasets[i]),]
+  for (j in 1:4) {
+    ij.df = i.df[which(i.df$Final_Hydro_Class == j),]
+    ij.df$cumulative.length = cumsum(ij.df$total.length)
+    fl.cls.ord.cumsum2 = rbind(fl.cls.ord.cumsum2, ij.df)
+  }
+}
+ggplot(fl.cls.ord.sum2, aes(y=total.length,
+                           x=factor(streamorde),
+                           group=interaction(type.detail, dataset),
+                           color=type.detail,
+                           linetype=dataset)) + 
+             geom_line(linewidth=0.8) + 
+             labs(x="Stream Order", y="Length (km)",
+                  linetype="Dataset",color="Hydrologic Classification") +
+             scale_y_continuous(labels=scales::comma)
+ggplot(fl.cls.ord.cumsum2, aes(y=cumulative.length,
+                            x=factor(streamorde),
+                            group=interaction(type.detail, dataset),
+                            color=type.detail,
+                            linetype=dataset)) + 
+      geom_line(linewidth=0.8) + 
+      labs(x="Stream Order", y="Cumulative Length (km)",
+           linetype="Dataset",color="Hydrologic Classification") +
+      scale_y_continuous(labels=scales::comma,
+                         limits=c(0,150000))

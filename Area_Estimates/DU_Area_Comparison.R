@@ -8,6 +8,30 @@ library(ggplot2)
 library(reshape2)
 library(ggpattern)
 
+# datasets
+datasets = c("Original NWI 1980-1987","Ducks Unlimited 2005")
+
+# water regimes / wetland flood frequency cutoffs
+water.regimes = c("Permanently Flooded","Intermittently Exposed",
+                  "Semipermanently Flooded","Seasonally Flooded/Saturated",
+                  "Seasonally Flooded","Seasonally Saturated",
+                  "Temporary Flooded","Intermittently Flooded")
+water.reg.labels = c("Permanently Flooded","Intermittently Exposed",
+                     "Semipermanently Flooded","Seasonally Flooded/Saturated",
+                     "Seasonally Flooded","Seasonally Saturated",
+                     "Temporarily Flooded","Intermittently Flooded")
+n.w = length(water.regimes)
+
+# stream flow permanence criteria
+perm.levels = c("Perennial","Intermittent","Ephemeral")
+perm.abrvs = c("1","2","3")
+n.p = length(perm.abrvs)
+
+# make vectors for buffer scenarios
+buf.dists = c("1","10","20","100")
+buf.cols = paste("buf", buf.dists, sep="")
+n.b = length(buf.dists)
+
 ################################################################################
 # step 1: comparing effects of exclusions between original NWI and DU
 
@@ -38,7 +62,6 @@ nwi.du.areas = read.csv("NWI_DU_Exclusions_Summary.csv")
 colnames(nwi.du.areas) = c("dataset","exclusion","area","count")
 nwi.du.areas$area = as.numeric(nwi.du.areas$area)
 ex.order = unique(nwi.du.areas$exclusion)
-datasets = c("Original NWI 1980-1987","Ducks Unlimited 2005")
 p1 = ggplot(nwi.du.areas, aes(y=factor(exclusion, levels=rev(ex.order)), 
                               x=area, 
                               group=factor(dataset, levels=datasets),
@@ -79,27 +102,6 @@ colnames(du.df)[which(colnames(du.df) == "WETLAND_TY")] = "WETLAND_TYPE"
 # compare total areas 
 sum(nwi.df$Area_Ha)
 sum(du.df$Area_Ha)
-
-# water regimes / wetland flood frequency cutoffs
-water.regimes = c("Permanently Flooded","Intermittently Exposed",
-                  "Semipermanently Flooded","Seasonally Flooded/Saturated",
-                  "Seasonally Flooded","Seasonally Saturated",
-                  "Temporary Flooded","Intermittently Flooded")
-water.reg.labels = c("Permanently Flooded","Intermittently Exposed",
-                     "Semipermanently Flooded","Seasonally Flooded/Saturated",
-                     "Seasonally Flooded","Seasonally Saturated",
-                     "Temporarily Flooded","Intermittently Flooded")
-n.w = length(water.regimes)
-
-# stream flow permanence criteria
-perm.levels = c("Perennial","Intermittent","Ephemeral")
-perm.abrvs = c("1","2","3")
-n.p = length(perm.abrvs)
-
-# make vectors for buffer scenarios
-buf.dists = c("1","10","20","100")
-buf.cols = paste("buf", buf.dists, sep="")
-n.b = length(buf.dists)
 
 # calculate non-WOTUS area
 area.df = data.frame(matrix(nrow=2*n.w*n.p*n.b, ncol=16))
@@ -206,8 +208,8 @@ ggplot(area.stats.df, aes(x=mean,
              linetype="Dataset",
              group="Dataset") +
         scale_x_continuous(limits=c(0,450000), labels=scales::comma) +
-        scale_color_manual(values=c("Original NWI 1980-1987"="black",
-                                    "Ducks Unlimited 2005"="green4")) +
+        scale_color_manual(values=c("Original NWI 1980-1987"="forestgreen",
+                                    "Ducks Unlimited 2005"="steelblue4")) +
         scale_linetype_manual(values = c("Original NWI 1980-1987"="solid",
                                          "Ducks Unlimited 2005"="dashed")) +
         theme(text = element_text(size=15),
@@ -273,14 +275,17 @@ ggplot(area.comb.melt, aes(x = Mean,
                        linetype=factor(dataset, levels=datasets)), 
                    alpha=0.1, linewidth=0.9) + 
        labs(y="Wetland Flood Frequency Cutoff",
-            x="Mean Non-WOTUS Wetland Area (ha)",
-            fill="Reason for Lack\nof Federal Jurisdiction") +
+            x="Non-WOTUS Wetland Area (ha)",
+            color="Dataset",linetype="Dataset") +
        scale_x_continuous(labels=scales::comma) +
        theme(text = element_text(size=15),
-             legend.key.size = unit(0.8,'cm'),
-             axis.text.y=element_blank()) +
+             legend.key.size = unit(0.8,'cm')) +
        facet_wrap(.~`Reason for Lack\nof Federal Jurisdiction`,
-                  scales = "free")
+                  scales = "free_x") + 
+       scale_color_manual(values=c("Original NWI 1980-1987"="forestgreen",
+                                   "Ducks Unlimited 2005"="steelblue4")) +
+       scale_linetype_manual(values = c("Original NWI 1980-1987"="solid",
+                                        "Ducks Unlimited 2005"="dashed"))
 
 # calculate statistics by type
 type.melt = melt(area.df[,c("dataset","water_cutoff","perm_level","buf_dist","pond","emergent","forest")],
@@ -294,6 +299,10 @@ type.stats.df = type.melt %>%
                           max = max(area))
 type.stats.df$water_label = rep(0, nrow(type.stats.df))
 for (i in 1:n.w) { type.stats.df$water_label[which(type.stats.df$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
+types = c("pond","emergent","forest")
+type.labels = c("Pond","Emergent","Forested")
+type.stats.df$type_label = rep(0, nrow(type.stats.df))
+for (i in 1:3) { type.stats.df$type_label[which(type.stats.df$type == types[i])] = type.labels[i] }
 ggplot(type.stats.df, aes(x = mean, 
                            y = factor(water_label, levels=water.reg.labels),
                            group=factor(dataset, levels=datasets), 
@@ -307,13 +316,16 @@ ggplot(type.stats.df, aes(x = mean,
                        linetype=factor(dataset, levels=datasets)), 
                    alpha=0.1, linewidth=0.9) + 
        labs(y="Wetland Flood Frequency Cutoff",
-            x="Mean Non-WOTUS Wetland Area (ha)",
-            fill="Reason for Lack\nof Federal Jurisdiction") +
+            x="Non-WOTUS Wetland Area (ha)",
+            color="Dataset",linetype="Dataset") +
        scale_x_continuous(labels=scales::comma) +
        theme(text = element_text(size=15),
-             legend.key.size = unit(0.8,'cm'),
-             axis.text.y=element_blank()) +
-       facet_wrap(.~type,scales = "free")
+             legend.key.size = unit(0.8,'cm')) +
+       facet_wrap(.~factor(type_label, levels=type.labels), scales = "free_x") +  
+       scale_color_manual(values=c("Original NWI 1980-1987"="forestgreen",
+                                   "Ducks Unlimited 2005"="steelblue4")) +
+       scale_linetype_manual(values = c("Original NWI 1980-1987"="solid",
+                                        "Ducks Unlimited 2005"="dashed"))
 
 ################################################################################
 # step 2: compare protection levels between original NWI and DU
@@ -391,15 +403,29 @@ gap.stats.df = gap.area.df %>%
 # compare area statistics between datasets
 gap.stats.df$water_label = rep(0, nrow(gap.stats.df))
 for (i in 1:n.w) { gap.stats.df$water_label[which(gap.stats.df$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
+x = gap.stats.df$mean[which(gap.stats.df$gap=="Managed for multiple uses" & gap.stats.df$water_cutoff=="Seasonally Flooded")]
+gap.stats.df$mean[which(gap.stats.df$gap=="Managed for multiple uses" & gap.stats.df$water_cutoff=="Seasonally Flooded")] = x + 0.001
 ggplot(gap.stats.df, aes(x=mean, 
                          y = factor(water_label, levels=water.reg.labels),
                          group=factor(dataset, levels=datasets), 
                          color=factor(dataset, levels=datasets),
                          linetype=factor(dataset, levels=datasets))) + 
        geom_line(linewidth=0.8) +
+       geom_ribbon(data = gap.stats.df,
+                   aes(xmin=min, xmax=max, 
+                       group=factor(dataset, levels=datasets), 
+                       color=factor(dataset, levels=datasets),
+                       linetype=factor(dataset, levels=datasets)), 
+                   alpha=0.1, linewidth=0.9) +
        facet_wrap(.~gap, scales="free_x") +
-       labs(x="Area (ha)",y="",color="Dataset",
-            group="Dataset",linetype="Dataset")
+       labs(x="Non-WOTUS Wetland Area (ha)",
+            y="Wetland Flood Frequency Cutoff",
+            color="Dataset",group="Dataset",linetype="Dataset") +
+       scale_x_continuous(labels=scales::comma) +
+       scale_color_manual(values=c("Original NWI 1980-1987"="forestgreen",
+                                   "Ducks Unlimited 2005"="steelblue4")) +
+       scale_linetype_manual(values = c("Original NWI 1980-1987"="solid",
+                                        "Ducks Unlimited 2005"="dashed"))
 
 ## estimate unprotected non-WOTUS area in each type by water regime
 
@@ -457,12 +483,28 @@ type.area.sum = type.area.df %>%
 # plot area by type
 type.area.sum$water_label = rep(0, nrow(type.area.sum))
 for (i in 1:n.w) { type.area.sum$water_label[which(type.area.sum$water_cutoff == water.regimes[i])] = water.reg.labels[i] }
+types = c("Freshwater Pond","Freshwater Emergent Wetland","Freshwater Forested/Shrub Wetland")
+type.labels = c("Pond","Emergent","Forested")
+type.area.sum$type_label = rep(0, nrow(type.area.sum))
+for (i in 1:3) { type.area.sum$type_label[which(type.area.sum$type == types[i])] = type.labels[i] }
 ggplot(type.area.sum, aes(x=mean, 
                          y = factor(water_label, levels=water.reg.labels),
                          group=factor(dataset, levels=datasets), 
                          color=factor(dataset, levels=datasets),
                          linetype=factor(dataset, levels=datasets))) + 
       geom_line(linewidth=0.8) +
-      facet_wrap(.~type, scales="free_x") +
-      labs(x="Area (ha)",y="",color="Dataset",
-           group="Dataset",linetype="Dataset")
+      geom_ribbon(data = type.area.sum,
+                  aes(xmin=min, xmax=max, 
+                      group=factor(dataset, levels=datasets), 
+                      color=factor(dataset, levels=datasets),
+                      linetype=factor(dataset, levels=datasets)), 
+                  alpha=0.1, linewidth=0.9) +
+      scale_x_continuous(labels=scales::comma) +
+      scale_color_manual(values=c("Original NWI 1980-1987"="forestgreen",
+                                  "Ducks Unlimited 2005"="steelblue4")) +
+      scale_linetype_manual(values = c("Original NWI 1980-1987"="solid",
+                                       "Ducks Unlimited 2005"="dashed")) +
+      facet_wrap(.~factor(type_label, levels=type.labels), scales="free_x") +
+      labs(x="Unprotected Non-WOTUS Wetland Area (ha)",
+           y="Wetland Flood Frequency Cutoff",
+           color="Dataset",group="Dataset",linetype="Dataset")
