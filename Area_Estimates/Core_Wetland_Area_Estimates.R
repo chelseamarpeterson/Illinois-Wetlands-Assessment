@@ -330,6 +330,7 @@ p1 = ggplot(area.stats.df, aes(x=mean,
                                              "Simmons et al. (2024)"="dashed")) +
             theme(text = element_text(size=15),
                   legend.key.size = unit(0.8,'cm'))
+p1
 p2 = ggplot(area.comb.melt) +
             geom_col_pattern(aes(x=Mean, 
                   y = factor(water_label, levels=water.reg.labels),
