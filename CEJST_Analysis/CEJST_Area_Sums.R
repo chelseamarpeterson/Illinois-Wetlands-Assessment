@@ -1,4 +1,4 @@
-path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results"
+path_to_datafiles = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Results/NWI_Data"
 
 library(dplyr)
 
@@ -9,7 +9,7 @@ AcPerHa = 2.47105
 
 # read in CJEST csv
 setwd(path_to_datafiles)
-ws.df = read.csv("IL_WS_Step15_CJEST_Intersect_Table.csv")
+ws.df = read.csv("IL_WS_Step15_CJEST_Intersect.csv")
 
 # check area sums
 sum(ws.df$Wetland_Area_Ha)
@@ -83,5 +83,5 @@ sf.stats.sum = area.stats.sum[which(area.stats.sum$water_cutoff == "Seasonally F
 write.csv(sf.stats.sum,"IL_WS_Step16_CJEST_UnproArea_SF.csv", row.names=F)
 
 ## compute 90th quantile for Figure 5
-q.df = read.csv("IL_WS_Step16_CJEST_UnproJoin_SF_Table_NormArea.csv", header=T)
+q.df = read.csv("IL_WS_Step16_CJEST_UnproJoin_SF_NormArea.csv", header=T)
 quantile(q.df$norm_area, prob=c(0.9))

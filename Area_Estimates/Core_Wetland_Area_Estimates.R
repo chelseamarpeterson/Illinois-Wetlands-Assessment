@@ -36,7 +36,7 @@ sum(ws.df$Area_Acres/AcPerHa)
 
 ## step 3: make character vectors for policy scenarios 
 
-# water regimes / wetland flood frequency cutoffs
+# water regimes / Wetland Flood-Frequency Cutoffs
 water.regimes = c("Permanently Flooded","Intermittently Exposed",
                     "Semipermanently Flooded","Seasonally Flooded/Saturated",
                     "Seasonally Flooded","Seasonally Saturated",
@@ -310,7 +310,7 @@ p1 = ggplot(area.stats.df, aes(x=mean,
                             color=factor(study, levels=studies),
                             linetype=factor(study, levels=studies)), 
                         alpha=0.1, linewidth=0.9) +
-            labs(y="Wetland Flood Frequency Cutoff",
+            labs(y="Wetland Flood-Frequency Cutoff",
                  x="Non-WOTUS Wetland Area (ha)",
                  color="Source of Range Estimate",
                  linetype="Source of Range Estimate",
@@ -330,7 +330,6 @@ p1 = ggplot(area.stats.df, aes(x=mean,
                                              "Simmons et al. (2024)"="dashed")) +
             theme(text = element_text(size=15),
                   legend.key.size = unit(0.8,'cm'))
-p1
 p2 = ggplot(area.comb.melt) +
             geom_col_pattern(aes(x=Mean, 
                   y = factor(water_label, levels=water.reg.labels),
@@ -352,7 +351,7 @@ p3 = p1 + p2
 p3
 setwd(path_to_gitrepo)
 ggsave("Area_Estimates/Figure1_Jurisdictional_Plot.jpeg", 
-        plot = p3, width = 42, height = 14, units="cm")
+       plot = p3, width = 42, height = 14, units="cm", dpi = 600)
 
 # print areas by reason
 for (i in 1:4) {
@@ -366,7 +365,7 @@ for (i in 1:4) {
 setwd(path_to_nwi_data)
 
 ## step 1: read in gap intersect table
-gap.df = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect_Table.csv")
+gap.df = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect.csv")
 
 # check area totals
 sum(gap.df$Shape_Area/10^4); sum(ws.df$Shape_Area/10^4)
@@ -572,7 +571,7 @@ p1 = ggplot(gap.stats.df) +
                              pattern_fill="black",
                              pattern_density=0.1,
                              pattern_spacing=0.025) +
-            labs(y="Wetland Flood Frequency Cutoff",
+            labs(y="Wetland Flood-Frequency Cutoff",
                  x="Mean Non-WOTUS Wetland Area (ha)",
                  fill="gap",pattern="gap") +
             scale_x_continuous(limits=c(0,400000), labels=scales::comma) +
@@ -619,7 +618,7 @@ p2 = ggplot(type.area.sum) +
                   legend.key.size = unit(0.8,'cm'))
 p3 = p1 + p2
 ggsave("Area_Estimates/Figure2_Unprotected_Plot.jpeg", 
-       plot = p3, width = 42, height = 14, units="cm")
+       plot = p3, width = 42, height = 14, units="cm", dpi=600)
 
 # estimate percentage by which county ordinances increase MFB area
 mb = gap.area.df[gap.area.df$gap == "Managed for biodiversity","area"]

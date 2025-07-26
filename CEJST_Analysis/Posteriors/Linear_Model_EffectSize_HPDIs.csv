@@ -1,9 +1,17 @@
-"model","water_cutoff","mean","X2.5","X97.5","water_label"
-"Only unprotected tracts","Intermittently Exposed",0.0369117684,0.0288277,0.0443088,"Intermittently Exposed"
-"Only unprotected tracts","Intermittently Flooded",0.0635096398,0.0486208,0.0863993,"Intermittently Flooded"
-"Only unprotected tracts","Permanently Flooded",0.0355651372,0.0276303,0.0441606,"Permanently Flooded"
-"Only unprotected tracts","Seasonally Flooded",0.0486003244,0.0386662,0.0579105,"Seasonally Flooded"
-"Only unprotected tracts","Seasonally Flooded/Saturated",0.0375419798,0.0297365,0.0444012,"Seasonally Flooded/Saturated"
-"Only unprotected tracts","Seasonally Saturated",0.0486730066,0.0394205,0.0590535,"Seasonally Saturated"
-"Only unprotected tracts","Semipermanently Flooded",0.0374181414,0.0289889,0.0450439,"Semipermanently Flooded"
-"Only unprotected tracts","Temporary Flooded",0.0633629412,0.043448,0.0807318,"Temporarily Flooded"
+"model","water_cutoff","mean","2.5","97.5"
+"All","Intermittently Exposed",-0.027205566644,-0.410803,0.315551
+"All","Intermittently Flooded",0.40844068084,-0.470049,0.971202
+"All","Permanently Flooded",0.180994108844,-0.54969,0.702178
+"All","Seasonally Flooded",-0.179165880236,-1.1465,1.05363
+"All","Seasonally Flooded/Saturated",-0.305663746952,-1.76305,0.526355
+"All","Seasonally Saturated",-0.336857031892,-1.89339,0.717493
+"All","Semipermanently Flooded",-0.19753071996,-1.38824,0.229805
+"All","Temporary Flooded",-0.611901278384,-1.7206,0.276901
+"Unprotected counties","Intermittently Exposed",0.013192095808,0.0101375,0.0163179
+"Unprotected counties","Intermittently Flooded",0.02338585496,0.0162028,0.0306506
+"Unprotected counties","Permanently Flooded",0.012749510212,0.00971508,0.0158336
+"Unprotected counties","Seasonally Flooded",0.01775039852,0.0139561,0.0221357
+"Unprotected counties","Seasonally Flooded/Saturated",0.01351248522,0.0102757,0.0166731
+"Unprotected counties","Seasonally Saturated",0.01773059808,0.0139128,0.0219557
+"Unprotected counties","Semipermanently Flooded",0.013476018508,0.0102511,0.0164357
+"Unprotected counties","Temporary Flooded",0.02326841808,0.0162955,0.030226
