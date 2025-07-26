@@ -101,18 +101,26 @@ for (i in 1:n.v) {
     grp = groups[j]
     df = area.dfs[[grp]]
     area.lists[[ind]][[grp]] = list(area_norm = as.vector(df$Mean_Normalized_Wetland_Area),
-                                    cutoff_id = as.integer(factor(df$water_cutoff)),
-                                    risk_id = as.integer(factor(df[,ind.cols[i]])))
+                                    cutoff_id = ai.snteger(factor(df$water_cutoff)),
+                                    risk_id = ai.snteger(factor(df[,ind.cols[i]])))
   }
 }
 
 ## fit models for normalized area
+setwd(path_to_gitrepo)
 set.seed(314)
 m.list = list()
-for (i in 1:n.v) {
+for (i in (n.v-2):n.v) {
   ind = indicators[i]
-  m.list[[ind]] = list() 
-  for (j in 1:n.g) {
+  m.list[[ind]] = list()
+  i.s = 1
+  i.e = n.g
+  if (ind == "w") {
+    i.e = n.g - 1
+  } else if (ind == "b") {
+    i.s = n.g
+  }
+  for (j in i.s:i.e) {
     grp = groups[j]
     area.list.ij = area.lists[[ind]][[grp]]
     m.ij = ulam(alist(area_norm ~ normal(mu, sigma),
@@ -145,42 +153,31 @@ fld.lists = list()
 for (i in 1:n.g) {
   grp = groups[i]
   df = area.dfs[[grp]]
-  fld.lists[[grp]] = list(cutoff_id = as.integer(factor(df$water_cutoff)),
+  fld.lists[[grp]] = list(cutoff_id = ai.snteger(factor(df$water_cutoff)),
                           area_norm = as.vector(df$Mean_Normalized_Wetland_Area), 
                           fld_pfs = as.vector(df$FLD_PFS))
 }
 
 # fit models
 set.seed(271)
+setwd(path_to_gitrepo)
 linear.models = list()
 for (i in 1:n.g) {
   grp = groups[i]
   ml <- ulam(alist(fld_pfs ~ normal(mu, sigma),
-                         log(mu) <- a[wid] + b[wid]*area_norm,
-                         c(a, b)[wid] ~ multi_normal( c(a_fld,b_fld) , Rho , sigma_fld ),
+                         log(mu) <- a[cutoff_id] + b[cutoff_id]*area_norm,
+                         c(a, b)[cutoff_id] ~ multi_normal( c(a_fld,b_fld) , Rho , sigma_fld ),
                          a_fld ~ normal(0,1),
                          b_fld ~ normal(0,1),
                          sigma_fld ~ exponential(1),
                          sigma ~ exponential(1),
                          Rho ~ lkj_corr(2)), 
-                   data=fld.list.all, chains=5, log_lik=TRUE)
-  linear.models[[grp]]
+                   data=fld.lists[[grp]], chains=5, log_lik=TRUE)
+  linear.models[[grp]] = ml
 }
-
-
-ml.f.unprotected <- ulam(alist(fld_pfs ~ normal(mu, sigma),
-                               log(mu) <- a[wid] + b[wid]*area_norm,
-                               c(a, b)[wid] ~ multi_normal( c(a_fld,b_fld) , Rho , sigma_fld ),
-                               a_fld ~ normal(0,1),
-                               b_fld ~ normal(0,1),
-                               sigma_fld ~ exponential(1),
-                               sigma ~ exponential(1),
-                               Rho ~ lkj_corr(2)) , 
-             data=fld.list.unprotected, chains=5, log_lik=TRUE)
 
 #summary(lm(log(FLD_PFS)~Mean_Normalized_Wetland_Area, 
 #             data=area.cj.df.unprotected[which(area.cj.df.unprotected$wid==8),]))  
-
 
 # traceplots
 #traceplot(ml.f)
