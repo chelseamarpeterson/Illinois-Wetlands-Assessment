@@ -83,6 +83,11 @@ for (i in 1:n.g) {
   area.dfs[[grp]]$Mean_Normalized_Wetland_Area = area.dfs[[grp]]$Tract_Normalized_Wetland_Area/global.means[[grp]]
 }
 
+hist(area.dfs[[groups[1]]]$Tract_Normalized_Wetland_Area*1000)
+hist(area.dfs[[groups[2]]]$Tract_Normalized_Wetland_Area*1000)
+hist(area.dfs[[groups[1]]]$Mean_Normalized_Wetland_Area)
+hist(area.dfs[[groups[2]]]$Mean_Normalized_Wetland_Area)
+
 ################################################################################
 # CEJST Analysis 1: fit Bayesian distributions to each indicator group
 
@@ -101,8 +106,8 @@ for (i in 1:n.v) {
     grp = groups[j]
     df = area.dfs[[grp]]
     area.lists[[ind]][[grp]] = list(area_norm = as.vector(df$Mean_Normalized_Wetland_Area),
-                                    cutoff_id = ai.snteger(factor(df$water_cutoff)),
-                                    risk_id = ai.snteger(factor(df[,ind.cols[i]])))
+                                    cutoff_id = as.integer(factor(df$water_cutoff)),
+                                    risk_id = as.integer(factor(df[,ind.cols[i]])))
   }
 }
 
@@ -110,23 +115,21 @@ for (i in 1:n.v) {
 setwd(path_to_gitrepo)
 set.seed(314)
 m.list = list()
-for (i in (n.v-2):n.v) {
+for (i in 1:n.v) {
   ind = indicators[i]
   m.list[[ind]] = list()
   i.s = 1
   i.e = n.g
   if (ind == "w") {
     i.e = n.g - 1
-  } else if (ind == "b") {
-    i.s = n.g
-  }
+  } 
   for (j in i.s:i.e) {
     grp = groups[j]
     area.list.ij = area.lists[[ind]][[grp]]
     m.ij = ulam(alist(area_norm ~ normal(mu, sigma),
-                   log(mu) <- a[cutoff_id,risk_id],
-                   matrix[cutoff_id,risk_id]: a ~ dnorm(0,1),
-                   sigma ~ dexp(1)),
+                      log(mu) <- a[cutoff_id,risk_id],
+                      matrix[cutoff_id,risk_id]: a ~ dnorm(0,1),
+                      sigma ~ dexp(1)),
              data=area.list.ij, chains=5, log_lik=T)
     m.list[[ind]][[grp]] = m.ij
     
@@ -153,99 +156,131 @@ fld.lists = list()
 for (i in 1:n.g) {
   grp = groups[i]
   df = area.dfs[[grp]]
-  fld.lists[[grp]] = list(cutoff_id = ai.snteger(factor(df$water_cutoff)),
+  fld.lists[[grp]] = list(cutoff_id = as.integer(factor(df$water_cutoff)),
                           area_norm = as.vector(df$Mean_Normalized_Wetland_Area), 
-                          fld_pfs = as.vector(df$FLD_PFS))
+                          fld_pfs = as.vector(df$FLD_PFS)/mean(as.vector(df$FLD_PFS)))
 }
 
 # fit models
 set.seed(271)
-setwd(path_to_gitrepo)
-linear.models = list()
-for (i in 1:n.g) {
+linear.models1 = list()
+#linear.models2 = list()
+for (i in n.g:n.g) {
   grp = groups[i]
-  ml <- ulam(alist(fld_pfs ~ normal(mu, sigma),
+  ml.1 <- ulam(alist(fld_pfs ~ normal(mu, sigma),
                          log(mu) <- a[cutoff_id] + b[cutoff_id]*area_norm,
                          c(a, b)[cutoff_id] ~ multi_normal( c(a_fld,b_fld) , Rho , sigma_fld ),
-                         a_fld ~ normal(0,1),
-                         b_fld ~ normal(0,1),
+                         a_fld ~ normal(0,2),
+                         b_fld ~ normal(0,2),
                          sigma_fld ~ exponential(1),
                          sigma ~ exponential(1),
                          Rho ~ lkj_corr(2)), 
                    data=fld.lists[[grp]], chains=5, log_lik=TRUE)
-  linear.models[[grp]] = ml
+  linear.models1[[grp]] = ml.1
+  #ml.2 <- ulam(alist(fld_pfs ~ normal(mu, sigma),
+  #                   log(mu) <- a[cutoff_id] + b[cutoff_id]*area_norm,
+  #                   a[cutoff_id] ~ normal(0,1),
+  #                   b[cutoff_id] ~ normal(0,1),
+  #                   sigma ~ exponential(1)), 
+  #             data=fld.lists[[grp]], chains=f, log_lik=TRUE)
+  #linear.models2[[grp]] = ml.2
 }
+precis(linear.models1[[groups[2]]],depth=3)
+compare(linear.models1[[groups[1]]],linear.models2[[groups[1]]], func="WAIC")
+compare(linear.models1[[groups[1]]],linear.models2[[groups[1]]], func="PSIS")
+compare(linear.models1[[groups[2]]],linear.models2[[groups[2]]], func="WAIC")
+compare(linear.models1[[groups[2]]],linear.models2[[groups[2]]], func="WAIC")
 
-#summary(lm(log(FLD_PFS)~Mean_Normalized_Wetland_Area, 
-#             data=area.cj.df.unprotected[which(area.cj.df.unprotected$wid==8),]))  
-
-# traceplots
-#traceplot(ml.f)
-#traceplot(ml.fc)
+# check chains
+traceplot(linear.models[[groups[2]]])
+trankplot(linear.models[[groups[2]]])
 
 # extract posterior samples and calculate 95% HPDIs
-post.df = data.frame(matrix(nrow=n.w, ncol=5))
-colnames(post.df) = c("group","water_cutoff","mean","2.5","97.5")
+post.df = data.frame(matrix(nrow=4*n.w, ncol=8))
+parameters = c("a","b")
+colnames(post.df) = c("group","water_cutoff","parameter","mean","2.5","97.5","5","95")
 k = 1
-for (i in 1:2) {
-  if (i == 1) {
-    m = ml.f.all
-    df = area.cj.df
-    group_name = "All"
-  } else {
-    m = ml.f.unprotected
-    df = area.cj.df.unprotected
-    group_name = "Unprotected counties"
-  }
+for (i in 1:n.g) {
+  grp = groups[i]
+  df = area.dfs[[grp]]
+  m = linear.models1[[grp]]
   samples = extract.samples(m)
-  post.a = samples$a
-  post.b = samples$b
-  for (j in 1:n.w) {
-    post.df[k,"group"] = group_name
-    post.df[k,"water_cutoff"] = levels(factor(area.cj.df$water_cutoff))[j]
-    post.df[k,"mean"] = mean(post.b[,j])
-    post.df[k,"2.5"] = HPDI(post.b[,j], prob=0.95)[1]
-    post.df[k,"97.5"] = HPDI(post.b[,j], prob=0.95)[2]
-    k = k + 1
+  post.list = list()
+  post.list[["a"]] = samples$a
+  post.list[["b"]] = samples$b
+  for (l in 1:2) {
+    p = parameters[l]
+    post = post.list[[p]]
+    for (j in 1:n.w) {
+      post.df[k,"group"] = group.labels[i]
+      post.df[k,"water_cutoff"] = levels(factor(df$water_cutoff))[j]
+      post.df[k,"parameter"] = p
+      post.df[k,"mean"] = mean(post[,j])
+      post.df[k,"2.5"] = HPDI(post[,j], prob=0.95)[1]
+      post.df[k,"97.5"] = HPDI(post[,j], prob=0.95)[2]
+      post.df[k,"5"] = HPDI(post[,j], prob=0.90)[1]
+      post.df[k,"95"] = HPDI(post[,j], prob=0.90)[2]
+      k = k + 1
+    }
   }
 }
 
 # save posterior dataframe
 setwd(path_to_gitrepo)
-write.csv(post.df, "CEJST_Analysis/Posteriors/Linear_Model_EffectSize_HPDIs.csv", row.names=F)
+write.csv(post.df, "CEJST_Analysis/Posteriors/FLD_PFS_And_Area_Normalized_Linear_Model_EffectSize_HPDIs.csv", row.names=F)
 
 # plot lines at Seasonally Flooded cutoff
 n = 2000
-samples = extract.samples(ml.f.unprotected)
+grp = groups[2]
+samples = extract.samples(linear.models1[[grp]])
+df = area.dfs[[grp]]
 post.a = samples$a
 post.b = samples$b
-post.line.df = data.frame(matrix(nrow=0, ncol=5))
-colnames(post.line.df) = c("water_cutoff","area","mean","2.5","97.5")
+post.line.df = data.frame(matrix(nrow=0, ncol=7))
+colnames(post.line.df) = c("water_cutoff","area","mean","2.5","97.5","5","95")
 for (i in 1:n.w) {
-  wr = levels(factor(area.cj.df.unprotected$water_cutoff))[i]
-  wr.ind = which(area.cj.df.unprotected$water_cutoff == wr)
-  df.wr = data.frame(matrix(nrow=n, ncol=5))
-  colnames(df.wr) = c("water_cutoff","area","mean","2.5","97.5")
-  wr.area.max = max(area.cj.df.unprotected$Mean_Normalized_Wetland_Area[wr.ind])
+  wr = levels(factor(df$water_cutoff))[i]
+  wr.ind = which(df$water_cutoff == wr)
+  df.wr = data.frame(matrix(nrow=n, ncol=7))
+  colnames(df.wr) = c("water_cutoff","area","mean","2.5","97.5","5","95")
+  wr.area.max = max(df$Mean_Normalized_Wetland_Area[wr.ind])
   area.range = seq(0, wr.area.max, by=wr.area.max/(n-1))
   df.wr[1:n,"water_cutoff"] = wr
-  df.wr[1:n,"area"] = area.range*Mean_Tract_Normalized_Wetland_Area*1000
+  df.wr[1:n,"area"] = area.range*global.means[[grp]]*1000
   for (j in 1:n) {
-    pred.ij = exp(post.a[,i] + post.b[,i]*area.range[j])
-    hpdi.ij = HPDI(pred.ij, prob=0.95)
+    pred.ij = exp(post.a[,i] + post.b[,i]*area.range[j])*mean(as.vector(df$FLD_PFS))*100
     df.wr[j,"mean"] = mean(pred.ij)
-    df.wr[j,"2.5"] = hpdi.ij[1]
-    df.wr[j,"97.5"] = hpdi.ij[2]
+    df.wr[j,"2.5"] = HPDI(pred.ij, prob=0.95)[1]
+    df.wr[j,"97.5"] = HPDI(pred.ij, prob=0.95)[2]
+    df.wr[j,"5"] = HPDI(pred.ij, prob=0.90)[1]
+    df.wr[j,"95"] = HPDI(pred.ij, prob=0.90)[2]
   }
   post.line.df = rbind(post.line.df, df.wr)
 }
-max(post.line.df[which(post.line.df$water_cutoff == "Seasonally Flooded"),"area"])
 
 # write dataframe for posterior linear prediction
-write.csv(post.line.df, "CEJST_Analysis/Posteriors/Linear_Model_Prediction.csv", row.names=F)
+write.csv(post.line.df, "CEJST_Analysis/Posteriors/FLD_PFS_And_Area_Normalized_Linear_Model_Prediction.csv", row.names=F)
 
 # write area dataframe without protected counties for plotting
-write.csv(area.cj.df.unprotected, "CEJST_Analysis/Posteriors/CEJST_WetlandArea_Dataframe_NoUnproCnties.csv", row.names=F)
+write.csv(df, "CEJST_Analysis/Posteriors/CEJST_WetlandArea_Dataframe_NoUnproCnties.csv", row.names=F)
+
+
+################################################################################
+# side analysis: comparison with regular glm
+
+library(lme4)
+library(performance)
+
+df = area.dfs[[groups[2]]]
+df$fld_pfs = as.vector(df$FLD_PFS)/mean(as.vector(df$FLD_PFS))
+df$cutoff_id = as.integer(factor(df$water_cutoff))
+model <- lmer(log(fld_pfs) ~ Mean_Normalized_Wetland_Area + (1 + Mean_Normalized_Wetland_Area | cutoff_id), 
+              data = df)
+summary(model)
+icc(model)
+coef(model)$cutoff_id
+
+precis(linear.models2[[groups[2]]],depth=2)
 
 ################################################################################
 # side analysis: logistic regression
