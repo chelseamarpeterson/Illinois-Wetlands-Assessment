@@ -133,6 +133,30 @@ p1
 ggsave("CEJST_Analysis/Figures/Figure6_Posterior_ClimateFlood_Differences.png", 
        plot = p1, width = 32, height = 12, units="cm", dpi = 600)
 
+
+## plot all indicators
+p2 = ggplot(m.stats) + 
+        geom_point(aes(x=1000*mean, 
+                       y=factor(water_label, levels=water.reg.labels),
+                       color=factor(indicator,levels=ind.labels[1:2]),
+                       group=factor(group, levels=group.labels)),
+                   position=position_dodge(0.5)) +
+        geom_vline(xintercept=0) +
+        geom_errorbarh(aes(xmin=1000*`2.5`,xmax=1000*`97.5`, 
+                           y=factor(water_label, levels=water.reg.labels), 
+                           color=factor(indicator,levels=ind.labels[1:2]),
+                           linetype=factor(group, levels=group.labels)),
+                       position=position_dodge(0.5), 
+                       height=0.2) +
+        labs(x="Posterior Mean Area Difference (Indicator True - False)\n[Unprotected non-WOTUS wetland ha/1,000 tract ha]",
+             y="Wetland Flood-Frequency Cutoff") +
+        guides(color="none",linetype=guide_legend(title="Census tract group")) +
+        theme(text = element_text(size=14)) + 
+        facet_wrap(.~factor(indicator,levels=ind.labels))
+p2
+#ggsave("CEJST_Analysis/Figures/Figure6_Posterior_ClimateFlood_Differences.png", 
+#       plot = p1, width = 32, height = 12, units="cm", dpi = 600)
+
 ## print results for paper
 
 # multiply by 1,000 to get wetland area per 1,000 census tract ha
@@ -235,20 +259,26 @@ round(post.df.all.a[wr.order,c("mean","X2.5","X97.5")],2)
 post.df.all.b = post.df[which(post.df$group == "All" & post.df$parameter=="b"),]
 round(post.df.all.b[wr.order,c("mean","X2.5","X97.5")],2)
 
+# approximate slope of line
+max.fld.pls = max(line.df.wr$mean)
+min.fld.pls = min(line.df.wr$mean)
+(max.fld.pls-min.fld.pls)/(max(line.df.wr$area))*10
+
 # plot incremental increase in slope of nonlinear model
-area_norm = seq(0, 210, by=10)/mean(area.cj.df.unprotected$Mean_DivArea)/1000
+area_norm = seq(0, 207.5, by=1)/mean(area.cj.df.unprotected$Tract_Normalized_Wetland_Area)/1000
+wr.a = post.df.up.a[which(post.df.up.a$water_cutoff == "Seasonally Flooded"),"mean"]
+wr.b = post.df.up.b[which(post.df.up.b$water_cutoff == "Seasonally Flooded"),"mean"]
 n = length(area_norm)
 delta = c()
-all_f = c(exp(-0.05+0.04860032*area_norm[1])*100)
+all_f = c(exp(wr.a+wr.b*area_norm[1])*mean(area.cj.df.unprotected$FLD_PFS)*100)
 for (i in 2:n) {
-  f = exp(-0.77156311+0.04860032*area_norm[i])*100
+  f = exp(wr.a+wr.b*area_norm[i])*mean(area.cj.df.unprotected$FLD_PFS)*100
   delta = c(delta, f-all_f[i-1])
   all_f = c(all_f, f)
 }
-plot(area_norm[2:n]*mean(area.cj.df.unprotected$Mean_DivArea)*1000, delta, ylim=c(1.2,3))
+plot(area_norm[2:n]*mean(area.cj.df.unprotected$Tract_Normalized_Wetland_Area)*1000, delta)
 min(delta)
 max(delta)
-min(area.cj.df.unprotected[sf.ind,]$Mean_DivArea*1000)
-max(area.cj.df.unprotected[sf.ind,]$Mean_DivArea*1000)
-min(post.line.df$mean*100)
-max(post.line.df$mean*100)
+
+
+

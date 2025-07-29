@@ -1,11 +1,10 @@
 path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
 
-setwd(path_to_gitrepo)
-
 library(ggplot2)
 library(patchwork)
 
 # read in excel file
+setwd(path_to_gitrepo)
 sum.area.df = read.csv("Summary_Figures/Figure8_AreaSummary.csv")
 
 # remove extra rows
@@ -64,7 +63,7 @@ p.hist = ggplot(df.stack[which(df.stack$group == "Historical loss"),],
                        panel.background = element_rect(fill = "white")) +
                  scale_fill_manual(values=c("coral1","coral3","coral4"))
 ggsave("Summary_Figures/HistoricalLoss.png", plot = p.hist, 
-       width=21.5, height=36, units="cm") 
+       width=21.5, height=36, units="cm",dpi=1000) 
 
 cwa.labels = df.stack[which(df.stack$group == "CWA coverage"),"label"]
 df.cwa = df.stack[which(df.stack$group == "CWA coverage"),]
@@ -88,7 +87,7 @@ p.cwa=ggplot(df.cwa,
               panel.background = element_rect(fill = "white")) +
         scale_fill_manual(values=c("deepskyblue","dodgerblue3","blue4"))
 ggsave("Summary_Figures/CWACoverage.png", plot = p.cwa, 
-       width=22.75, height=36, units="cm") 
+       width=22.75, height=36, units="cm",dpi=1000) 
 
 pro.labels = df.stack[which(df.stack$group == "Protection status"),"label"]
 p.pro = ggplot(df.stack[which(df.stack$group == "Protection status"),],
@@ -110,7 +109,7 @@ p.pro = ggplot(df.stack[which(df.stack$group == "Protection status"),],
                     panel.background = element_rect(fill = "white")) +
               scale_fill_manual(values=c("goldenrod2","darkgoldenrod"))
 ggsave("Summary_Figures/ProtectionStatus.png", plot = p.pro, 
-       width = 19.25, height = 36, units="cm") 
+       width = 19.25, height = 36, units="cm",dpi=1000) 
 
 veg.labels = df.stack[which(df.stack$group == "Unprotected vegetation types"),"label"]
 p.veg = ggplot(df.stack[which(df.stack$group == "Unprotected vegetation types"),],
@@ -132,7 +131,7 @@ p.veg = ggplot(df.stack[which(df.stack$group == "Unprotected vegetation types"),
                       panel.background = element_rect(fill = "white")) +
                 scale_fill_manual(values=c("olivedrab3","olivedrab","darkgreen"))
 ggsave("Summary_Figures/VegetationTypes.png", plot = p.veg, 
-       width = 20, height = 30, units="cm")
+       width = 20, height = 30, units="cm",dpi=1000)
 
 lev.labels = df.stack[which(df.stack$group == "Protection level"),"label"]
 p.lev = ggplot(df.stack[which(df.stack$group == "Protection level"),],
@@ -154,7 +153,7 @@ p.lev = ggplot(df.stack[which(df.stack$group == "Protection level"),],
                       panel.b.ackground = element_rect(fill = "white")) +
                 scale_fill_manual(values=c("plum3","mediumpurple2","darkorchid4"))
 ggsave("Summary_Figures/ProtectionLevels.png", plot = p.lev, 
-       width = 14, height = 8, units="cm")
+       width = 14, height = 8, units="cm",dpi=1000)
 
 
 

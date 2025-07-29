@@ -193,9 +193,8 @@ round(data.frame(perc.del.stats.df[area.mean.sort$ix,c("mean","min","max")]),8)
 
 ## step 8: compare results to previous studies 
 
-setwd(path_to_gitrepo)
-
 # read in levin (2002) and Simmmons et al. (2024) estimates
+setwd(path_to_gitrepo)
 ls.df = read.csv("Area_Estimates/Previous_Studies/Fixed_Estimates_Acres.csv", sep=",")
 ls.df.area = ls.df[which(ls.df$type == "area"),-which(colnames(ls.df) %in% c("type","unit"))]
 
@@ -224,11 +223,18 @@ for (i in 1:n.w) {
 }
 
 # NRDC (2025) estimate
-nrdc.est.df = ls.df.area[which(ls.df.area$study == "NRDC (2025)"),]
+nrdc.est.df = ls.df.area[which(ls.df.area$study == "Devine et al. (2025)"),]
 nrdc.est.df[,c("mean","min","max")] = nrdc.est.df[,c("mean","min","max")]/AcPerHa
 for (i in 1:n.w) {
   nrdc.est.df$water_cutoff = rev(water.regimes)[i]
-  area.stats.df = rbind(area.stats.df, nrdc.est.df[,colnames(area.stats.df)])
+  if (i %in% seq(1,5)) {
+    wr.df = nrdc.est.df[,c("water_cutoff","study","mean","min","mean")]
+    colnames(wr.df) = c("water_cutoff","study","mean","min","max")
+  } else {
+    wr.df = nrdc.est.df[,c("water_cutoff","study","max","max","max")]
+    colnames(wr.df) = c("water_cutoff","study","mean","min","max")
+  }
+  area.stats.df = rbind(area.stats.df, wr.df)
 }
 
 # Gold (2024) estimates
@@ -317,16 +323,16 @@ p1 = ggplot(area.stats.df, aes(x=mean,
                  group="Source of Range Estimate") +
             scale_x_continuous(limits=c(0,400000), labels=scales::comma) +
             scale_color_manual(values=c("This study"="black",
+                                        "Devine et al. (2025)" = "dodgerblue4",
                                         "Gold (2024)"="goldenrod1",
                                         "Lane et al. (2025)" = "green4",
                                         "Levin et al. (2002)" = "darkorange2",
-                                        "NRDC (2025)" = "dodgerblue4",
                                         "Simmons et al. (2024)"="purple")) +
             scale_linetype_manual(values = c("This study"="solid",
+                                             "Devine et al. (2025)"="dotdash",
                                              "Gold (2024)"="longdash",
                                              "Lane et al. (2025)"="twodash",
                                              "Levin et al. (2002)"="dotted",
-                                             "NRDC (2025)"="dotdash",
                                              "Simmons et al. (2024)"="dashed")) +
             theme(text = element_text(size=15),
                   legend.key.size = unit(0.8,'cm'))

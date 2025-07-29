@@ -11,7 +11,7 @@ AcPerHa = 2.47105
 
 # read in wetland table
 setwd(path_to_nwi_data)
-ws.df = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect_Table.csv")
+ws.df = read.csv("IL_WS_Step12_GAP_Union_CntyIntersect.csv")
 
 # check area sums
 sum(ws.df$Shape_Area / 10^4)
@@ -158,8 +158,8 @@ cnty.tot.type.join = right_join(cnty.type.sf, wide.df, by="county")
 type.labs = c("Freshwater emergent wetland",
               "Freshwater forested/shrub wetland",
               "Freshwater pond")
-cnty.type.sf$type_lab = rep(0, nrow(cnty.type.sf))
-for (i in 1:3) { cnty.type.sf$type_lab[which(cnty.type.sf$wetland_type == wetland.types[i])] = type.labs[i] }
+cnty.tot.type.join$type_lab = rep(0, nrow(cnty.tot.type.join))
+for (i in 1:3) { cnty.tot.type.join$type_lab[which(cnty.tot.type.join$wetland_type == wetland.types[i])] = type.labs[i] }
 p1 = ggplot(wide.df, 
             aes(x=log(mean_SF), 
                 y=log(area_uncert))) +
@@ -183,7 +183,7 @@ p3 = ggplot(cnty.tot.type.join,
                 y=log(uncertainty), 
                 color=type_lab,
                 shape=type_lab)) + 
-            geom_point(size=2) + geom_smooth(method='lm')+
+            geom_point(size=2) + #geom_smooth(method='lm')+
             labs(x="Log(Type UP-NW Area [ha])", 
                  y="Log(Type Area Uncertainty)",
                  color="Wetland Type",shape="Wetland Type") +
@@ -191,11 +191,13 @@ p3 = ggplot(cnty.tot.type.join,
             guides(color="none", shape="none")
 p4 = (p1 + p2)/(plot_spacer() + p3)
 p4
+setwd(path_to_gitrepo)
 ggsave("County_Statistics/FigureA2_WetlandArea_Uncertainty.png", 
-       plot=p4, width=24, height=16, units="cm")
+       plot=p4, width=24, height=16, units="cm", dpi=600)
 
 lm(log(uncertainty)~log(mean)*type_lab, 
    data=cnty.tot.type.join)
+
 # write file
 write.csv(cnty.type.sum[,c("county","wetland_type","water_cutoff","mean","min","max")], 
           "County_Statistics/IL_WS_Step13_County_Type_Stats.csv",row.names = F)

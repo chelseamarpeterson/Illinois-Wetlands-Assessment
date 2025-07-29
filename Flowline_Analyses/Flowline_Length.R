@@ -1,6 +1,5 @@
 path_to_gitrepo = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment/Public-Repo"
 path_to_main = "C:/Users/Chels/OneDrive - University of Illinois - Urbana/Illinois Wetlands Risk Assessment"
-setwd(path_to_gitrepo)
 
 library(ggplot2)
 library(dplyr)
@@ -11,7 +10,8 @@ library(tidyr)
 # plot length of flowlines by type to decide length cutoffs for unknown streams/rivers
 
 # read in NHD data clipped to flowline extent
-flowlines.df = read.csv("Flowline_Analyses/NHDFlowline_IL_Step1_Clip.csv")
+setwd(path_to_main)
+flowlines.df = read.csv("Results/NHD_Data/NHDFlowline_IL_Step1_Clip.csv")
 
 # make histograms of upstream drainage area by fcode
 fcodes = c(46006,46003,46007)
@@ -38,8 +38,8 @@ ggplot(pie.df,
 # estimate length of flowlines by type
 
 # read in table with all classifications
-fl.df1 = read.csv("Flowline_Analyses/NHDFlowline_IL_Step4_HydroClass.csv")
-fl.df2 = read.csv("Flowline_Analyses/NHDFlowline_IL_Step5_HydroClass.csv")
+fl.df1 = read.csv("Results/NHD_Data/NHDFlowline_IL_Step4_HydroClass.csv")
+fl.df2 = read.csv("Results/NHD_Data/NHDFlowline_IL_Step5_HydroClass.csv")
 fl.df.join = left_join(fl.df1, fl.df2, by = c("permanent_identifier"))
 
 # estimate total county and length of known perennial, intermittent, and ephemeral
@@ -130,8 +130,8 @@ it.l-i3.l-i2.l-i1.l
 it.c-i3.c-i2.c-i1.c
 
 ## estimate count and length of flowlines before any were removed due to isolation
-fl.df0 = read.csv("Flowline_Analyses/NHDFlowline_IL_Step1_Clip.csv")
-fl.df1 = read.csv("Flowline_Analyses/NHDFlowline_IL_Step4_HydroClass.csv")
+fl.df0 = read.csv("Results/NHD_Data/NHDFlowline_IL_Step1_Clip.csv")
+fl.df1 = read.csv("Results/NHD_Data/NHDFlowline_IL_Step4_HydroClass.csv")
 
 # total length and count
 nrow(fl.df0)
@@ -150,8 +150,8 @@ nrow(fl.df.nona2)
 sum(fl.df.join[-which(is.na(fl.df.join$Final_Hydro_Class)),c("Length_km")])
 
 ## estimate count and length of flowlines classified as perennial due to intersection with NHD Area
-fl.step1.df = read.csv("Flowline_Analyses/NHDFlowline_IL_Step2_NonIsolated.csv")
-area.int.df = read.csv("Flowline_Analyses/NHDFlowline_IL_Step3_StreamClassification1.csv")
+fl.step1.df = read.csv("Results/NHD_Data/NHDFlowline_IL_Step2_NonIsolated.csv")
+area.int.df = read.csv("Results/NHD_Data/NHDFlowline_IL_Step3_StreamClassification1.csv")
 
 sum(area.int.df$Hydro_Class == 1) - sum(fl.step1.df$Hydro_Class == 1)
 sum(area.int.df[area.int.df$Hydro_Class == 1,"Length_Km"]) - sum(fl.step1.df[fl.step1.df$Hydro_Class == 1,"Length_Km"])
@@ -159,7 +159,7 @@ sum(area.int.df[area.int.df$Hydro_Class == 1,"Length_Km"]) - sum(fl.step1.df[fl.
 ## estimate count and length of flowlines classified as perennial due to intersection with NHD waterbody
 # 103630-412-21654-1158-5-48141 = 32260
 # 62248 - 282 - 12484 - 1511 - 3 - 41816 = 6152
-water.int.df = read.csv("Flowline_Analyses/NHDFlowline_IL_Step3_StreamClassification2.csv")
+water.int.df = read.csv("Results/NHD_Data/NHDFlowline_IL_Step3_StreamClassification2.csv")
 sum(water.int.df[water.int.df$Hydro_Class == 1,"Length_Km"]) - sum(area.int.df[area.int.df$Hydro_Class == 1,"Length_Km"])
 sum(water.int.df$Hydro_Class == 1) - sum(area.int.df$Hydro_Class == 1)
 
@@ -242,9 +242,9 @@ ggplot(fl.class.sum2, aes(y=type,
 # totals for isolated, eph, int, per
 types = c("Perennial","Intermittent","Ephemeral","Isolated")
 lengths.org = c(1491,2266,126675,62248)
-cum.lengths = cumsum(lengths)
+cum.lengths = cumsum(lengths.org)
 hydro.df = data.frame(type = types,
-                      length = lengths,
+                      length = lengths.org,
                       cum.length = cum.lengths)
 hydro.df$group = "Flow permanence &\nconnectivity class"
 hydro.df$type.detail = detail.labs
@@ -279,7 +279,7 @@ p1 = ggplot() +
                size=0.9) +
      guides(color=guide_legend(title="Cumulative length up to\nhydrologic classification"),
             lty=guide_legend(title="Cumulative length up to\nhydrologic classification")) +
-     theme(text = element_text(size=12),
+     theme(text = element_text(size=14),
            legend.key.size = unit(0.7,'cm')) +
      scale_linetype_manual(values=c("dotted","dashed","dotdash","longdash"))
 p2 = ggplot() + 
@@ -295,6 +295,13 @@ p2 = ggplot() +
      guides(lty=guide_legend(title="")) +
      theme(text = element_text(size=14),
            legend.key.size = unit(0.7,'cm'))  
+p1
+p2
+setwd(path_to_main)
+ggsave("Documents/JEMA_Manuscript_May_2025/Supplementary_Figures/FigureD1_CumulativeLengthRaw.jpeg", 
+       plot = p1, width = 20, height = 12, units="cm", dpi=600)
+ggsave("Documents/JEMA_Manuscript_May_2025/Supplementary_Figures/FigureD1_SolidCumulativeLengthForLegend.jpeg", 
+       plot = p2, width = 20, height = 12, units="cm", dpi=600)
 
 # total length in each hydrologic class by stream order
 fl.cls.ord.sum = fl.df %>%
