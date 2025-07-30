@@ -631,10 +631,10 @@ mb = gap.area.df[gap.area.df$gap == "Managed for biodiversity","area"]
 mmu = gap.area.df[gap.area.df$gap == "Managed for multiple uses","area"]
 cso = gap.area.df[gap.area.df$gap == "County stormwater ordinance","area"]
 x = cso/(mb+mmu)
-min(x)
-max(x)
-min(cso)
-max(cso)
+round(min(x)*100,1)
+round(max(x)*100,1)
+round(min(cso)*100,1)
+round(max(cso)*100,1)
 min(mb+mmu)
 max(mb+mmu)
 mb.mmu.stats.df = gap.area.df[which(gap.area.df$gap %in% c("Managed for biodiversity","Managed for multiple uses")),] %>%

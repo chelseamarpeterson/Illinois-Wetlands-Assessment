@@ -135,16 +135,16 @@ ggsave("CEJST_Analysis/Figures/Figure6_Posterior_ClimateFlood_Differences.png",
 
 
 ## plot all indicators
-p2 = ggplot(m.stats) + 
+p2 = ggplot(m.stats[-which(m.stats$indicator %in% c("Climate Risk","Flood Risk")),]) + 
         geom_point(aes(x=1000*mean, 
                        y=factor(water_label, levels=water.reg.labels),
-                       color=factor(indicator,levels=ind.labels[1:2]),
+                       color=factor(indicator,levels=ind.labels[3:6]),
                        group=factor(group, levels=group.labels)),
                    position=position_dodge(0.5)) +
         geom_vline(xintercept=0) +
         geom_errorbarh(aes(xmin=1000*`2.5`,xmax=1000*`97.5`, 
                            y=factor(water_label, levels=water.reg.labels), 
-                           color=factor(indicator,levels=ind.labels[1:2]),
+                           color=factor(indicator,levels=ind.labels[3:6]),
                            linetype=factor(group, levels=group.labels)),
                        position=position_dodge(0.5), 
                        height=0.2) +
@@ -152,10 +152,10 @@ p2 = ggplot(m.stats) +
              y="Wetland Flood-Frequency Cutoff") +
         guides(color="none",linetype=guide_legend(title="Census tract group")) +
         theme(text = element_text(size=14)) + 
-        facet_wrap(.~factor(indicator,levels=ind.labels))
+        facet_wrap(.~factor(indicator,levels=ind.labels), ncol=4)
 p2
-#ggsave("CEJST_Analysis/Figures/Figure6_Posterior_ClimateFlood_Differences.png", 
-#       plot = p1, width = 32, height = 12, units="cm", dpi = 600)
+ggsave("CEJST_Analysis/Figures/FigureA3_All_Posterior_Differences.png", 
+       plot=p2, width=30, height=10, units="cm", dpi=600)
 
 ## print results for paper
 

@@ -83,11 +83,6 @@ for (i in 1:n.g) {
   area.dfs[[grp]]$Mean_Normalized_Wetland_Area = area.dfs[[grp]]$Tract_Normalized_Wetland_Area/global.means[[grp]]
 }
 
-hist(area.dfs[[groups[1]]]$Tract_Normalized_Wetland_Area*1000)
-hist(area.dfs[[groups[2]]]$Tract_Normalized_Wetland_Area*1000)
-hist(area.dfs[[groups[1]]]$Mean_Normalized_Wetland_Area)
-hist(area.dfs[[groups[2]]]$Mean_Normalized_Wetland_Area)
-
 # estimate number of tracts outside of northeastern Illinois with high building and pop losses
 area.df.sf = area.cj.df[which(area.cj.df$water_cutoff == "Seasonally Flooded"),]
 sum(area.df.sf$cntyid==0 & area.df.sf$FLD_ET == 1)
@@ -99,6 +94,16 @@ sum(area.df.sf$cntyid==0 & area.df.sf$EPL_ET == 1)
 sum(area.df.sf$EPL_ET == 1)
 sum(area.df.sf$cntyid==0 & (area.df.sf$EBL_ET == 1 | area.df.sf$EPL_ET == 1))
 sum(area.df.sf$EBL_ET == 1 | area.df.sf$EPL_ET == 1)
+
+## print means for each scenario
+
+# all
+global.means$all*1000
+mean(area.dfs[["all"]]$FLD_PFS)*100
+
+# all
+global.means$unprotected*1000
+mean(area.dfs[["unprotected"]]$FLD_PFS)*100
 
 ################################################################################
 # CEJST Analysis 1: fit Bayesian distributions to each indicator group

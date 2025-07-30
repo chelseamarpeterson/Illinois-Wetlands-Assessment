@@ -227,8 +227,8 @@ colnames(fl.class.sum.br)[1] = "Final_Hydro_Class"
 fl.class.sum2 = rbind(fl.class.sum, fl.class.sum.br)
 
 # add column for types
-detail.labs = c("Non-isolated perennial","Non-isolated intermittent",
-                "Non-isolated ephemeral","Isolated")
+detail.labs = c("Isolated","Non-isolated ephemeral","Non-isolated intermittent",
+                "Non-isolated perennial")
 fl.class.sum2$type = c(detail.labs, detail.labs)
 
 # make plot
@@ -240,7 +240,7 @@ ggplot(fl.class.sum2, aes(y=type,
        labs(y="",x="Total Length (km)",fill="Dataset")
 
 # totals for isolated, eph, int, per
-types = c("Perennial","Intermittent","Ephemeral","Isolated")
+types = c("Isolated","Ephemeral","Intermittent","Perennial")
 lengths.org = c(1491,2266,126675,62248)
 cum.lengths = cumsum(lengths.org)
 hydro.df = data.frame(type = types,
@@ -273,9 +273,9 @@ p1 = ggplot() +
      geom_line(data=hydro.df.rep,
                aes(x=factor(streamorde),
                    y=cum.length, 
-                   color=factor(type.detail, levels=detail.labs),
-                   lty=factor(type.detail, levels=detail.labs),
-                   group=factor(type.detail, levels=detail.labs)),
+                   color=factor(type.detail, levels=rev(detail.labs)),
+                   lty=factor(type.detail, levels=rev(detail.labs)),
+                   group=factor(type.detail, levels=rev(detail.labs))),
                size=0.9) +
      guides(color=guide_legend(title="Cumulative length up to\nhydrologic classification"),
             lty=guide_legend(title="Cumulative length up to\nhydrologic classification")) +
@@ -297,10 +297,10 @@ p2 = ggplot() +
            legend.key.size = unit(0.7,'cm'))  
 p1
 p2
-setwd(path_to_main)
-ggsave("Documents/JEMA_Manuscript_May_2025/Supplementary_Figures/FigureD1_CumulativeLengthRaw.jpeg", 
+setwd(path_to_gitrepo)
+ggsave("Flowline_Analyses/FigureD1_CumulativeLengthRaw.jpeg", 
        plot = p1, width = 20, height = 12, units="cm", dpi=600)
-ggsave("Documents/JEMA_Manuscript_May_2025/Supplementary_Figures/FigureD1_SolidCumulativeLengthForLegend.jpeg", 
+ggsave("Flowline_Analyses/FigureD1_SolidCumulativeLengthForLegend.jpeg", 
        plot = p2, width = 20, height = 12, units="cm", dpi=600)
 
 # total length in each hydrologic class by stream order
